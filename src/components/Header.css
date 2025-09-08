@@ -1,0 +1,164 @@
+.header {
+  height: 80px;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid;
+  transition: all 0.3s ease;
+}
+
+.header.dark {
+  background: #1a1a1a;
+  border-bottom-color: #333;
+}
+
+.header.light {
+  background: #ffffff;
+  border-bottom-color: #e0e0e0;
+}
+
+.header-content {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-text {
+  flex: 1;
+}
+
+.header-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+  letter-spacing: -0.5px;
+}
+
+.header.dark .header-title {
+  color: #fff;
+}
+
+.header.light .header-title {
+  color: #333;
+}
+
+.header-subtitle {
+  font-size: 14px;
+  margin: 0;
+  opacity: 0.7;
+}
+
+.header.dark .header-subtitle {
+  color: #b0b0b0;
+}
+
+.header.light .header-subtitle {
+  color: #666;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.header-button {
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: none;
+}
+
+.header.dark .header-button {
+  border-color: #333;
+  color: #b0b0b0;
+}
+
+.header.dark .header-button:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  border-color: #555;
+}
+
+.header.light .header-button {
+  border-color: #e0e0e0;
+  color: #666;
+}
+
+.header.light .header-button:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #333;
+  border-color: #ccc;
+}
+
+.header-button.primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: #fff;
+}
+
+.header-button.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.button-icon {
+  font-size: 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .header {
+    padding: 0 20px;
+    height: 70px;
+  }
+  
+  .header-title {
+    font-size: 24px;
+  }
+  
+  .header-actions {
+    gap: 8px;
+  }
+  
+  .header-button {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  
+  .header-button .button-icon {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 0 16px;
+    height: 60px;
+  }
+  
+  .header-title {
+    font-size: 20px;
+  }
+  
+  .header-actions {
+    gap: 6px;
+  }
+  
+  .header-button {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  
+  .header-button span:not(.button-icon) {
+    display: none;
+  }
+}

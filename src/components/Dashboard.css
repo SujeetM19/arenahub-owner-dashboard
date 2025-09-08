@@ -1,0 +1,62 @@
+.dashboard {
+  display: flex;
+  min-height: 100vh;
+  transition: all 0.3s ease;
+}
+
+.dashboard.dark {
+  background: #0f0f0f;
+  color: #fff;
+}
+
+.dashboard.light {
+  background: #f8f9fa;
+  color: #333;
+}
+
+.dashboard-main {
+  flex: 1;
+  margin-left: 280px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.dashboard-body {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.coming-soon {
+  padding: 60px 32px;
+  text-align: center;
+  font-size: 18px;
+  opacity: 0.7;
+}
+
+.dashboard.dark .coming-soon {
+  color: #b0b0b0;
+}
+
+.dashboard.light .coming-soon {
+  color: #666;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .dashboard-main {
+    margin-left: 0;
+  }
+  
+  .coming-soon {
+    padding: 40px 20px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .coming-soon {
+    padding: 30px 16px;
+    font-size: 14px;
+  }
+}

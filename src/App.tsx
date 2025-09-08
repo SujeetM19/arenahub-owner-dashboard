@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { ThemeProvider } from './contexts/ThemeContext';
 import VideoBackground from './components/VideoBackground';
 import OwnerSignIn from './components/OwnerSignIn';
 import OwnerSignUp from './components/OwnerSignUp';
 import OwnerWelcome from './components/OwnerWelcome';
+import Dashboard from './components/Dashboard';
 import './App.css';
 
 interface Owner {
@@ -12,7 +14,7 @@ interface Owner {
   businessName: string;
 }
 
-type AuthMode = 'signin' | 'signup' | 'welcome';
+type AuthMode = 'signin' | 'signup' | 'welcome' | 'dashboard';
 
 function App() {
   const [authMode, setAuthMode] = useState<AuthMode>('signin');
@@ -25,17 +27,17 @@ function App() {
     const token = localStorage.getItem('ownerToken');
     const ownerData = localStorage.getItem('ownerData');
     
-    if (token && ownerData) {
-      try {
-        const parsedOwner = JSON.parse(ownerData);
-        setOwner(parsedOwner);
-        setAuthMode('welcome');
-      } catch (error) {
-        // Clear invalid data
-        localStorage.removeItem('ownerToken');
-        localStorage.removeItem('ownerData');
+      if (token && ownerData) {
+        try {
+          const parsedOwner = JSON.parse(ownerData);
+          setOwner(parsedOwner);
+          setAuthMode('dashboard');
+        } catch (error) {
+          // Clear invalid data
+          localStorage.removeItem('ownerToken');
+          localStorage.removeItem('ownerData');
+        }
       }
-    }
   }, []);
 
   const handleSignIn = async (email: string, password: string) => {
@@ -57,7 +59,7 @@ function App() {
         localStorage.setItem('ownerToken', data.token);
         localStorage.setItem('ownerData', JSON.stringify(data.owner));
         setOwner(data.owner);
-        setAuthMode('welcome');
+        setAuthMode('dashboard');
       } else {
         setError(data.message || 'Sign in failed');
       }
@@ -87,7 +89,7 @@ function App() {
         localStorage.setItem('ownerToken', data.token);
         localStorage.setItem('ownerData', JSON.stringify(data.owner));
         setOwner(data.owner);
-        setAuthMode('welcome');
+        setAuthMode('dashboard');
       } else {
         setError(data.message || 'Sign up failed');
       }
@@ -117,35 +119,47 @@ function App() {
   };
 
   return (
-    <div className="App">
-      <VideoBackground />
-      
-      {authMode === 'signin' && (
-        <OwnerSignIn
-          onSignIn={handleSignIn}
-          onSwitchToSignUp={switchToSignUp}
-          isLoading={isLoading}
-          error={error}
-        />
-      )}
-      
-      {authMode === 'signup' && (
-        <OwnerSignUp
-          onSignUp={handleSignUp}
-          onSwitchToSignIn={switchToSignIn}
-          isLoading={isLoading}
-          error={error}
-        />
-      )}
-      
-      {authMode === 'welcome' && owner && (
-        <OwnerWelcome
-          ownerName={owner.name}
-          businessName={owner.businessName}
-          onSignOut={handleSignOut}
-        />
-      )}
-    </div>
+    <ThemeProvider>
+      <div className="App">
+        {authMode === 'dashboard' && owner ? (
+          <Dashboard
+            ownerName={owner.name}
+            businessName={owner.businessName}
+            onSignOut={handleSignOut}
+          />
+        ) : (
+          <>
+            <VideoBackground />
+            
+            {authMode === 'signin' && (
+              <OwnerSignIn
+                onSignIn={handleSignIn}
+                onSwitchToSignUp={switchToSignUp}
+                isLoading={isLoading}
+                error={error}
+              />
+            )}
+            
+            {authMode === 'signup' && (
+              <OwnerSignUp
+                onSignUp={handleSignUp}
+                onSwitchToSignIn={switchToSignIn}
+                isLoading={isLoading}
+                error={error}
+              />
+            )}
+            
+            {authMode === 'welcome' && owner && (
+              <OwnerWelcome
+                ownerName={owner.name}
+                businessName={owner.businessName}
+                onSignOut={handleSignOut}
+              />
+            )}
+          </>
+        )}
+      </div>
+    </ThemeProvider>
   );
 }
 
