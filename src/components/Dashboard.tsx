@@ -3,6 +3,12 @@ import { useTheme } from '../contexts/ThemeContext';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import DashboardContent from './DashboardContent';
+import MembersPage from './MembersPage';
+import StatisticsPage from './StatisticsPage';
+import NotificationsPage from './NotificationsPage';
+import SendAlertsPage from './SendAlertsPage';
+import CompareCentersPage from './CompareCentersPage';
+import PreferencesPage from './PreferencesPage';
 import './Dashboard.css';
 
 interface DashboardProps {
@@ -46,17 +52,17 @@ const Dashboard: React.FC<DashboardProps> = ({ ownerName, businessName, onSignOu
       case 'dashboard':
         return <DashboardContent />;
       case 'members':
-        return <div className="coming-soon">Members management coming soon...</div>;
+        return <MembersPage />;
       case 'statistics':
-        return <div className="coming-soon">Statistics dashboard coming soon...</div>;
+        return <StatisticsPage />;
       case 'notifications':
-        return <div className="coming-soon">Notifications center coming soon...</div>;
+        return <NotificationsPage />;
       case 'alerts':
-        return <div className="coming-soon">Send alerts feature coming soon...</div>;
+        return <SendAlertsPage />;
       case 'compare':
-        return <div className="coming-soon">Compare centers feature coming soon...</div>;
+        return <CompareCentersPage />;
       case 'preferences':
-        return <div className="coming-soon">Preferences panel coming soon...</div>;
+        return <PreferencesPage />;
       default:
         return <DashboardContent />;
     }
