@@ -8,32 +8,82 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Dark theme variables */
+/* Dark theme variables - professional dark theme */
 [data-theme="dark"] {
-  --bg-primary: #0f0f0f;
-  --bg-secondary: #1a1a1a;
-  --bg-tertiary: #2d2d2d;
-  --text-primary: #ffffff;
-  --text-secondary: #b0b0b0;
-  --text-muted: #666666;
-  --border-color: #333333;
-  --accent-primary: #667eea;
-  --accent-secondary: #764ba2;
-  --shadow: rgba(0, 0, 0, 0.3);
+  --bg-primary: #0F2137;
+  --bg-secondary: #152F4A;
+  --bg-tertiary: #1E3A56;
+  --text-primary: #E6E9EF;
+  --text-secondary: #A1AEC4;
+  --text-muted: #7B8794;
+  --border-color: #1E3A56;
+  --accent-primary: #1A73E8;
+  --accent-secondary: #1669D5;
+  --shadow: rgba(0, 0, 0, 0.4);
+  
+  /* Sidebar specific colors */
+  --sidebar-bg: #0D1B2A;
+  --sidebar-text: #A1AEC4;
+  --sidebar-text-active: #FFFFFF;
+  --sidebar-active-bg: #1E3A56;
+  --sidebar-hover-bg: #1E3A56;
+  --sidebar-section-title: #7B8794;
+  --sidebar-icon-color: #A1AEC4;
+  --sidebar-icon-active: #FFFFFF;
+  --sidebar-accent-blue: #1A73E8;
+  
+  /* Button colors */
+  --button-primary-bg: #1A73E8;
+  --button-primary-hover: #1669D5;
+  --button-primary-text: #FFFFFF;
+  --button-secondary-bg: #1E293B;
+  --button-secondary-hover: #2D3748;
+  --button-secondary-text: #FFFFFF;
+  
+  /* Card and table colors */
+  --card-bg: #152F4A;
+  --table-bg: #152F4A;
+  
+  /* Attendance pill colors */
+  --attendance-pill-bg: #1E293B;
+  --attendance-pill-text: #E2E8F0;
 }
 
-/* Light theme variables */
+/* Light theme variables - modern dashboard design */
 [data-theme="light"] {
-  --bg-primary: #f8f9fa;
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #f1f3f4;
-  --text-primary: #333333;
-  --text-secondary: #666666;
-  --text-muted: #999999;
-  --border-color: #e0e0e0;
-  --accent-primary: #667eea;
-  --accent-secondary: #764ba2;
-  --shadow: rgba(0, 0, 0, 0.1);
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --border-color: #e2e8f0;
+  --accent-primary: #6366f1;
+  --accent-secondary: #4f46e5;
+  --shadow: rgba(0, 0, 0, 0.08);
+  --shadow-lg: rgba(0, 0, 0, 0.12);
+  
+  /* Modern dashboard colors */
+  --title-color: #1e293b;
+  --title-color-secondary: #475569;
+  --sidebar-bg: #ffffff;
+  --sidebar-text: #64748b;
+  --sidebar-text-active: #ffffff;
+  --sidebar-active-bg: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  --sidebar-hover-bg: #f1f5f9;
+  --button-primary: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  --button-secondary: #f1f5f9;
+  --button-secondary-hover: #e2e8f0;
+  --status-active: #059669;
+  --status-inactive: #d97706;
+  --status-suspended: #dc2626;
+  --membership-basic: #059669;
+  --membership-premium: #2563eb;
+  --membership-vip: #7c3aed;
+  --card-bg: #ffffff;
+  --card-border: #e2e8f0;
+  --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --card-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 * {
@@ -53,22 +103,120 @@ body {
   min-height: 100vh;
 }
 
-/* Scrollbar styling */
+/* Scrollbar styling - always visible */
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-tertiary);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--border-color);
+  background: var(--bg-tertiary, #2d3748);
   border-radius: 4px;
 }
 
+::-webkit-scrollbar-thumb {
+  background: var(--border-color, #2d3748);
+  border-radius: 4px;
+  border: 1px solid var(--bg-tertiary, #2d3748);
+}
+
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+  background: var(--text-muted, #718096);
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--bg-tertiary, #2d3748);
+}
+
+/* Force scrollbars to be visible */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color, #2d3748) var(--bg-tertiary, #2d3748);
+}
+
+/* Ensure all containers can scroll properly */
+.dashboard-body,
+.dashboard-content,
+.members-page,
+.statistics-page,
+.attendance-page,
+.preferences-page,
+.compare-centers-page,
+.send-alerts-page,
+.notifications-page,
+.add-first-gym-container,
+.add-first-gym-card,
+.owner-signin-container,
+.owner-signup-container {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color, #2d3748) var(--bg-tertiary, #2d3748);
+}
+
+.dashboard-body::-webkit-scrollbar,
+.dashboard-content::-webkit-scrollbar,
+.members-page::-webkit-scrollbar,
+.statistics-page::-webkit-scrollbar,
+.attendance-page::-webkit-scrollbar,
+.preferences-page::-webkit-scrollbar,
+.compare-centers-page::-webkit-scrollbar,
+.send-alerts-page::-webkit-scrollbar,
+.notifications-page::-webkit-scrollbar,
+.add-first-gym-container::-webkit-scrollbar,
+.add-first-gym-card::-webkit-scrollbar,
+.owner-signin-container::-webkit-scrollbar,
+.owner-signup-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dashboard-body::-webkit-scrollbar-track,
+.dashboard-content::-webkit-scrollbar-track,
+.members-page::-webkit-scrollbar-track,
+.statistics-page::-webkit-scrollbar-track,
+.attendance-page::-webkit-scrollbar-track,
+.preferences-page::-webkit-scrollbar-track,
+.compare-centers-page::-webkit-scrollbar-track,
+.send-alerts-page::-webkit-scrollbar-track,
+.notifications-page::-webkit-scrollbar-track,
+.add-first-gym-container::-webkit-scrollbar-track,
+.add-first-gym-card::-webkit-scrollbar-track,
+.owner-signin-container::-webkit-scrollbar-track,
+.owner-signup-container::-webkit-scrollbar-track {
+  background: var(--bg-tertiary, #2d3748);
+  border-radius: 4px;
+}
+
+.dashboard-body::-webkit-scrollbar-thumb,
+.dashboard-content::-webkit-scrollbar-thumb,
+.members-page::-webkit-scrollbar-thumb,
+.statistics-page::-webkit-scrollbar-thumb,
+.attendance-page::-webkit-scrollbar-thumb,
+.preferences-page::-webkit-scrollbar-thumb,
+.compare-centers-page::-webkit-scrollbar-thumb,
+.send-alerts-page::-webkit-scrollbar-thumb,
+.notifications-page::-webkit-scrollbar-thumb,
+.add-first-gym-container::-webkit-scrollbar-thumb,
+.add-first-gym-card::-webkit-scrollbar-thumb,
+.owner-signin-container::-webkit-scrollbar-thumb,
+.owner-signup-container::-webkit-scrollbar-thumb {
+  background: var(--border-color, #2d3748);
+  border-radius: 4px;
+  border: 1px solid var(--bg-tertiary, #2d3748);
+}
+
+.dashboard-body::-webkit-scrollbar-thumb:hover,
+.dashboard-content::-webkit-scrollbar-thumb:hover,
+.members-page::-webkit-scrollbar-thumb:hover,
+.statistics-page::-webkit-scrollbar-thumb:hover,
+.attendance-page::-webkit-scrollbar-thumb:hover,
+.preferences-page::-webkit-scrollbar-thumb:hover,
+.compare-centers-page::-webkit-scrollbar-thumb:hover,
+.send-alerts-page::-webkit-scrollbar-thumb:hover,
+.notifications-page::-webkit-scrollbar-thumb:hover,
+.add-first-gym-container::-webkit-scrollbar-thumb:hover,
+.add-first-gym-card::-webkit-scrollbar-thumb:hover,
+.owner-signin-container::-webkit-scrollbar-thumb:hover,
+.owner-signup-container::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted, #718096);
 }
 
 /* Selection styling */

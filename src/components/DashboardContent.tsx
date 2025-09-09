@@ -1,24 +1,68 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
+import api from '../services/api';
+import { Users, Activity, DollarSign, Dumbbell, CheckCircle, Calendar, RotateCcw, Zap, UserPlus } from 'lucide-react';
 import './DashboardContent.css';
 
 const DashboardContent: React.FC = () => {
   const { theme } = useTheme();
+  const [stats, setStats] = useState<any>(null);
+  const [members, setMembers] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Placeholder data
-  const stats = [
-    { title: 'Total Members', value: '1,234', change: '+12%', trend: 'up', icon: '👥' },
-    { title: 'Active Sessions', value: '89', change: '+5%', trend: 'up', icon: '🏃' },
-    { title: 'Monthly Revenue', value: '$45,678', change: '+8%', trend: 'up', icon: '💰' },
-    { title: 'Equipment Usage', value: '92%', change: '-2%', trend: 'down', icon: '🏋️' },
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const [statsData, membersData, notificationsData] = await Promise.all([
+          api.getStatistics().catch(() => null),
+          api.getMembers().catch(() => []),
+          api.getNotifications().catch(() => [])
+        ]);
+        
+        setStats(statsData);
+        setMembers(Array.isArray(membersData) ? membersData : []);
+        setNotifications(Array.isArray(notificationsData) ? notificationsData : []);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        setStats(null);
+        setMembers([]);
+        setNotifications([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="dashboard-content">
+        <div className="loading-spinner">Loading dashboard data...</div>
+      </div>
+    );
+  }
+
+  // Use real data or fallback to placeholder
+  const statsData = stats ? [
+    { title: 'Total Members', value: stats.memberStats?.totalMembers || '0', change: `+${stats.memberStats?.memberGrowth || 0}%`, trend: 'up', icon: Users, color: 'blue' },
+    { title: 'Active Members', value: stats.memberStats?.activeMembers || '0', change: `+${stats.memberStats?.newMembersThisMonth || 0}`, trend: 'up', icon: Activity, color: 'green' },
+    { title: 'Monthly Revenue', value: `$${stats.revenueStats?.monthlyRevenue || 0}`, change: `+${stats.revenueStats?.revenueGrowth || 0}%`, trend: 'up', icon: DollarSign, color: 'purple' },
+    { title: 'Equipment Usage', value: `${stats.equipmentStats?.utilizationRate || 0}%`, change: `${stats.equipmentStats?.maintenanceRequired || 0} maintenance`, trend: 'up', icon: Dumbbell, color: 'orange' },
+  ] : [
+    { title: 'Total Members', value: '0', change: '+0%', trend: 'up', icon: Users, color: 'blue' },
+    { title: 'Active Members', value: '0', change: '+0', trend: 'up', icon: Activity, color: 'green' },
+    { title: 'Monthly Revenue', value: '$0', change: '+0%', trend: 'up', icon: DollarSign, color: 'purple' },
+    { title: 'Equipment Usage', value: '0%', change: '0 maintenance', trend: 'up', icon: Dumbbell, color: 'orange' },
   ];
 
   const recentActivities = [
-    { id: 1, user: 'John Doe', action: 'Checked in', time: '2 minutes ago', type: 'checkin' },
-    { id: 2, user: 'Sarah Wilson', action: 'Booked a class', time: '5 minutes ago', type: 'booking' },
-    { id: 3, user: 'Mike Johnson', action: 'Renewed membership', time: '10 minutes ago', type: 'renewal' },
-    { id: 4, user: 'Emily Davis', action: 'Completed workout', time: '15 minutes ago', type: 'workout' },
-    { id: 5, user: 'Alex Brown', action: 'Joined gym', time: '20 minutes ago', type: 'join' },
+    { id: 1, user: 'John Doe', action: 'Checked in', time: '2 minutes ago', type: 'checkin', icon: CheckCircle },
+    { id: 2, user: 'Sarah Wilson', action: 'Booked a class', time: '5 minutes ago', type: 'booking', icon: Calendar },
+    { id: 3, user: 'Mike Johnson', action: 'Renewed membership', time: '10 minutes ago', type: 'renewal', icon: RotateCcw },
+    { id: 4, user: 'Emily Davis', action: 'Completed workout', time: '15 minutes ago', type: 'workout', icon: Zap },
+    { id: 5, user: 'Alex Brown', action: 'Joined gym', time: '20 minutes ago', type: 'join', icon: UserPlus },
   ];
 
   const upcomingClasses = [
@@ -30,15 +74,23 @@ const DashboardContent: React.FC = () => {
 
   return (
     <div className={`dashboard-content ${theme}`}>
+      <div className="dashboard-welcome">
+        <h1 className="welcome-title">Welcome back!</h1>
+        <p className="welcome-subtitle">Here's what's happening at your gym today</p>
+      </div>
       <div className="dashboard-grid">
         {/* Stats Cards */}
         <div className="stats-section">
           <h2 className="section-title">Overview</h2>
-          <div className="stats-grid">
-            {stats.map((stat, index) => (
-              <div key={index} className={`stat-card ${theme}`}>
+        <div className="stats-grid">
+          {statsData.map((stat, index) => {
+            const IconComponent = stat.icon;
+            return (
+              <div key={index} className={`stat-card ${theme} stat-card-${stat.color}`}>
                 <div className="stat-header">
-                  <div className="stat-icon">{stat.icon}</div>
+                  <div className={`stat-icon stat-icon-${stat.color}`}>
+                    <IconComponent size={24} />
+                  </div>
                   <div className={`stat-trend ${stat.trend}`}>
                     {stat.trend === 'up' ? '↗️' : '↘️'} {stat.change}
                   </div>
@@ -48,7 +100,8 @@ const DashboardContent: React.FC = () => {
                   <div className="stat-title">{stat.title}</div>
                 </div>
               </div>
-            ))}
+            );
+          })}
           </div>
         </div>
 
@@ -83,23 +136,22 @@ const DashboardContent: React.FC = () => {
         <div className="activities-section">
           <h2 className="section-title">Recent Activities</h2>
           <div className={`activities-container ${theme}`}>
-            {recentActivities.map((activity) => (
-              <div key={activity.id} className="activity-item">
-                <div className="activity-avatar">
-                  {activity.type === 'checkin' && '✅'}
-                  {activity.type === 'booking' && '📅'}
-                  {activity.type === 'renewal' && '🔄'}
-                  {activity.type === 'workout' && '💪'}
-                  {activity.type === 'join' && '🎉'}
-                </div>
-                <div className="activity-content">
-                  <div className="activity-text">
-                    <strong>{activity.user}</strong> {activity.action}
+            {recentActivities.map((activity) => {
+              const IconComponent = activity.icon;
+              return (
+                <div key={activity.id} className="activity-item">
+                  <div className="activity-avatar">
+                    <IconComponent size={18} />
                   </div>
-                  <div className="activity-time">{activity.time}</div>
+                  <div className="activity-content">
+                    <div className="activity-text">
+                      <strong>{activity.user}</strong> {activity.action}
+                    </div>
+                    <div className="activity-time">{activity.time}</div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 

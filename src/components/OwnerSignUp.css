@@ -3,22 +3,26 @@
   z-index: 10;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   min-height: 100vh;
   padding: 20px;
+  overflow-y: auto;
 }
 
 .signup-card {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--bg-secondary, #1a1f2e);
   backdrop-filter: blur(10px);
   border-radius: 20px;
   padding: 40px;
   width: 100%;
   max-width: 500px;
   box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.1),
-    0 0 0 1px rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+    0 20px 40px rgba(0, 0, 0, 0.3),
+    0 0 0 1px var(--border-color, #2d3748);
+  border: 1px solid var(--border-color, #2d3748);
+  color: var(--text-primary, #ffffff);
+  margin: 20px 0;
+  min-height: fit-content;
 }
 
 .signup-header {

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTheme } from '../contexts/ThemeContext';
+import { Search, Settings, Plus } from 'lucide-react';
 import './Header.css';
 
 interface HeaderProps {
@@ -19,15 +20,15 @@ const Header: React.FC<HeaderProps> = ({ title, subtitle }) => {
         </div>
         <div className="header-actions">
           <button className="header-button">
-            <span className="button-icon">🔍</span>
+            <Search size={16} className="button-icon" />
             Search
           </button>
           <button className="header-button">
-            <span className="button-icon">⚙️</span>
+            <Settings size={16} className="button-icon" />
             Settings
           </button>
           <button className="header-button primary">
-            <span className="button-icon">➕</span>
+            <Plus size={16} className="button-icon" />
             Add New
           </button>
         </div>

@@ -1,17 +1,21 @@
 .statistics-page {
-  padding: 32px;
+  padding: 2rem;
   min-height: calc(100vh - 80px);
   transition: all 0.3s ease;
+  max-width: 1400px;
+  margin: 0 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .statistics-page.dark {
-  background: #0f0f0f;
-  color: #fff;
+  background: var(--bg-primary, #0f1419);
+  color: var(--text-primary, #ffffff);
 }
 
 .statistics-page.light {
-  background: #f8f9fa;
-  color: #333;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
 }
 
 .statistics-header {

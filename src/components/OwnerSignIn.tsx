@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import './OwnerSignIn.css';
 
 interface OwnerSignInProps {
   onSignIn: (email: string, password: string) => void;
-  onSwitchToSignUp: () => void;
   isLoading: boolean;
   error: string | null;
 }
 
 const OwnerSignIn: React.FC<OwnerSignInProps> = ({ 
   onSignIn, 
-  onSwitchToSignUp, 
   isLoading, 
   error 
 }) => {
@@ -76,13 +75,9 @@ const OwnerSignIn: React.FC<OwnerSignInProps> = ({
         <div className="signin-footer">
           <p className="switch-text">
             Don't have an account?{' '}
-            <button 
-              type="button" 
-              className="switch-button"
-              onClick={onSwitchToSignUp}
-            >
+            <Link to="/signup" className="switch-button">
               Sign Up
-            </button>
+            </Link>
           </p>
         </div>
       </div>

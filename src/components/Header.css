@@ -8,13 +8,15 @@
 }
 
 .header.dark {
-  background: #1a1a1a;
-  border-bottom-color: #333;
+  background: #152F4A;
+  border-bottom-color: #1E3A56;
 }
 
 .header.light {
-  background: #ffffff;
-  border-bottom-color: #e0e0e0;
+  background: var(--card-bg);
+  border-bottom-color: var(--border-color);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(10px);
 }
 
 .header-content {
@@ -36,11 +38,13 @@
 }
 
 .header.dark .header-title {
-  color: #fff;
+  color: #E6E9EF;
 }
 
 .header.light .header-title {
-  color: #333;
+  color: var(--title-color);
+  font-weight: 700;
+  font-size: 1.75rem;
 }
 
 .header-subtitle {
@@ -50,7 +54,7 @@
 }
 
 .header.dark .header-subtitle {
-  color: #b0b0b0;
+  color: #A1AEC4;
 }
 
 .header.light .header-subtitle {
@@ -78,40 +82,46 @@
 }
 
 .header.dark .header-button {
-  border-color: #333;
-  color: #b0b0b0;
+  background: #1E293B;
+  border: 1px solid #1E293B;
+  color: #FFFFFF;
 }
 
 .header.dark .header-button:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
-  border-color: #555;
+  background: #2D3748;
+  color: #FFFFFF;
+  border-color: #2D3748;
 }
 
 .header.light .header-button {
-  border-color: #e0e0e0;
-  color: #666;
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+  background: var(--button-secondary);
+  font-weight: 500;
 }
 
 .header.light .header-button:hover {
-  background: rgba(0, 0, 0, 0.05);
-  color: #333;
-  border-color: #ccc;
+  background: var(--button-secondary-hover);
+  color: var(--text-primary);
+  border-color: var(--accent-primary);
+  transform: translateY(-1px);
 }
 
 .header-button.primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border: none;
-  color: #fff;
+  background: #1A73E8;
+  border: 1px solid #1A73E8;
+  color: #FFFFFF;
 }
 
 .header-button.primary:hover {
+  background: #1669D5;
+  border-color: #1669D5;
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 8px 25px rgba(26, 115, 232, 0.3);
 }
 
 .button-icon {
-  font-size: 16px;
+  color: #FFFFFF;
 }
 
 /* Responsive Design */

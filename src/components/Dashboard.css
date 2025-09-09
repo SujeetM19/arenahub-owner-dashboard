@@ -2,16 +2,17 @@
   display: flex;
   min-height: 100vh;
   transition: all 0.3s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
 
 .dashboard.dark {
-  background: #0f0f0f;
-  color: #fff;
+  background: var(--bg-primary, #0F2137);
+  color: var(--text-primary, #E6E9EF);
 }
 
 .dashboard.light {
-  background: #f8f9fa;
-  color: #333;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
 }
 
 .dashboard-main {
@@ -20,11 +21,19 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  transition: margin-left 0.3s ease;
+}
+
+.dashboard-main.sidebar-collapsed {
+  margin-left: 80px;
 }
 
 .dashboard-body {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0;
+  margin: 0;
 }
 
 .coming-soon {
@@ -35,7 +44,7 @@
 }
 
 .dashboard.dark .coming-soon {
-  color: #b0b0b0;
+  color: var(--text-secondary, #a0aec0);
 }
 
 .dashboard.light .coming-soon {
