@@ -31,10 +31,11 @@ interface DashboardProps {
   ownerName: string;
   businessName: string;
   gyms: Gym[];
+  gymNames: string[];
   onSignOut: () => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ ownerName, businessName, gyms, onSignOut }) => {
+const Dashboard: React.FC<DashboardProps> = ({ ownerName, businessName, gyms, gymNames, onSignOut }) => {
   const { theme } = useTheme();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
@@ -42,6 +43,7 @@ const Dashboard: React.FC<DashboardProps> = ({ ownerName, businessName, gyms, on
     <div className={`dashboard ${theme}`}>
       <Sidebar 
         gyms={gyms}
+        gymNames={gymNames}
         onCollapseChange={setSidebarCollapsed}
         onSignOut={onSignOut}
       />
@@ -107,7 +109,7 @@ const Dashboard: React.FC<DashboardProps> = ({ ownerName, businessName, gyms, on
             </>
           } />
           
-          {gyms.length > 1 && (
+          {gymNames.length > 1 && (
             <Route path="/compare" element={
               <>
                 <Header 

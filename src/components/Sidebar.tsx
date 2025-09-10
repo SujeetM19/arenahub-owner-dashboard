@@ -15,7 +15,17 @@ import {
   LogOut,
   SunIcon,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Info,
+  PieChart,
+  CreditCard,
+  Image,
+  Package,
+  AlertTriangle,
+  UserCheck,
+  CheckCircle,
+  Search,
+  Filter
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -34,14 +44,20 @@ interface Gym {
 
 interface SidebarProps {
   gyms: Gym[];
+  gymNames: string[];
   onCollapseChange?: (collapsed: boolean) => void;
   onSignOut?: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ gyms, onCollapseChange, onSignOut }) => {
+const Sidebar: React.FC<SidebarProps> = ({ gyms, gymNames, onCollapseChange, onSignOut }) => {
   const { theme, toggleTheme } = useTheme();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [brightness, setBrightness] = useState(100);
+  const [selectedGyms, setSelectedGyms] = useState<string[]>([]);
+  const [currentGym, setCurrentGym] = useState<string | null>(gymNames.length > 0 ? gymNames[0] : null);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [filteredGyms, setFilteredGyms] = useState<string[]>(gymNames);
+  const [showFilters, setShowFilters] = useState<boolean>(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -59,6 +75,45 @@ const Sidebar: React.FC<SidebarProps> = ({ gyms, onCollapseChange, onSignOut }) 
 
   const handleNavigation = (path: string) => {
     navigate(path);
+  };
+
+  const handleGymSelect = (gymName: string) => {
+    if (selectedGyms.includes(gymName)) {
+      setSelectedGyms(selectedGyms.filter(name => name !== gymName));
+    } else {
+      setSelectedGyms([...selectedGyms, gymName]);
+    }
+  };
+
+  const handleGymClick = (gymName: string) => {
+    setCurrentGym(gymName);
+    navigate('/dashboard');
+  };
+
+  const handleCompareGyms = () => {
+    if (selectedGyms.length >= 2) {
+      navigate('/dashboard/compare');
+    }
+  };
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    if (query.trim() === '') {
+      setFilteredGyms(gymNames);
+    } else {
+      const filtered = gymNames.filter(gymName => 
+        gymName.toLowerCase().includes(query.toLowerCase())
+      );
+      setFilteredGyms(filtered);
+    }
+  };
+
+  const handleOverviewClick = () => {
+    navigate('/dashboard/all-gyms');
+  };
+
+  const handleFilterToggle = () => {
+    setShowFilters(!showFilters);
   };
 
   const isActive = (path: string) => {
@@ -83,21 +138,23 @@ const Sidebar: React.FC<SidebarProps> = ({ gyms, onCollapseChange, onSignOut }) 
     }
   }, []);
 
-  const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/dashboard' },
-    { id: 'facilities', label: 'Facilities', icon: Building2, path: '/dashboard/facilities' },
-    { id: 'statistics', label: 'Revenue & Attendance', icon: BarChart3, path: '/dashboard/statistics' },
-    { id: 'notifications', label: 'Notifications', icon: Bell, path: '/dashboard/notifications' },
-    { id: 'members', label: 'Members', icon: Users, path: '/dashboard/members' },
-    { id: 'alerts', label: 'Send Alerts', icon: Megaphone, path: '/dashboard/alerts' },
-    { id: 'attendance', label: 'Attendance', icon: CheckSquare, path: '/dashboard/attendance' },
-    { id: 'preferences', label: 'Preferences', icon: Settings, path: '/dashboard/preferences' },
-  ];
+  // Update filtered gyms when gymNames changes
+  useEffect(() => {
+    setFilteredGyms(gymNames);
+  }, [gymNames]);
 
-  // Only show compare centers if user has more than 1 gym
-  if (gyms.length > 1) {
-    navItems.push({ id: 'compare', label: 'Compare Centers', icon: Building2, path: '/dashboard/compare' });
-  }
+  // Management section items (same for all owners)
+  const managementItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/dashboard' },
+    { id: 'members', label: 'Members', icon: Users, path: '/dashboard/members' },
+    { id: 'information', label: 'Information', icon: Info, path: '/dashboard/information' },
+    { id: 'analytics', label: 'Analytics', icon: PieChart, path: '/dashboard/analytics' },
+    { id: 'membership-plans', label: 'Membership Plans', icon: CreditCard, path: '/dashboard/membership-plans' },
+    { id: 'gallery', label: 'Gallery', icon: Image, path: '/dashboard/gallery' },
+    { id: 'inventory', label: 'Inventory', icon: Package, path: '/dashboard/inventory' },
+    { id: 'alerts', label: 'Alerts', icon: AlertTriangle, path: '/dashboard/alerts' },
+    { id: 'staff', label: 'Staff', icon: UserCheck, path: '/dashboard/staff' },
+  ];
 
   return (
     <div className={`sidebar ${theme} ${isCollapsed ? 'collapsed' : ''}`}>
@@ -135,33 +192,70 @@ const Sidebar: React.FC<SidebarProps> = ({ gyms, onCollapseChange, onSignOut }) 
 
       {/* Navigation Section */}
       <nav className="sidebar-nav">
-        <div className="nav-section">
-          <h4 className="nav-section-title">Overview</h4>
-          {navItems.slice(0, 4).map((item) => {
-            const IconComponent = item.icon;
-            return (
-              <button
-                key={item.id}
-                className={`nav-item ${isActive(item.path) ? 'active' : ''}`}
-                onClick={() => handleNavigation(item.path)}
-              >
-                <div className="nav-item-icon">
-                  <IconComponent size={18} className="icon" />
+        {/* All Gyms Section - Only show if more than 1 gym */}
+        {gymNames.length > 1 && (
+          <div className="nav-section">
+            <button
+              className={`nav-item overview-button ${isActive('/dashboard/all-gyms') ? 'active' : ''}`}
+              onClick={handleOverviewClick}
+            >
+              <div className="nav-item-icon">
+                <Building2 size={18} className="icon" />
+              </div>
+              {!isCollapsed && (
+                <div className="nav-item-content">
+                  <span className="nav-item-label">Overview</span>
                 </div>
-                {!isCollapsed && (
-                  <div className="nav-item-content">
-                    <span className="nav-item-label">{item.label}</span>
-                  </div>
+              )}
+              {isActive('/dashboard/all-gyms') && !isCollapsed && <CheckCircle size={16} className="active-indicator" />}
+            </button>
+            {!isCollapsed && <div className="overview-divider"></div>}
+            {!isCollapsed && (
+              <>
+                <div className="gym-section-header">
+                  <h5 className="select-gym-text">Select a Gym</h5>
+                </div>
+                <div className="gym-search-container">
+                  <input
+                    type="text"
+                    placeholder="Search gyms..."
+                    value={searchQuery}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    className="gym-search-input"
+                  />
+                  <button className="gym-filter-button" onClick={handleFilterToggle}>
+                    <Filter size={14} />
+                  </button>
+                </div>
+                <div className="gym-list">
+                  {filteredGyms.map((gymName, index) => (
+                    <div key={index} className={`gym-item ${selectedGyms.includes(gymName) ? 'selected' : ''}`}>
+                      <input
+                        type="checkbox"
+                        className="gym-item-checkbox"
+                        checked={selectedGyms.includes(gymName)}
+                        onChange={() => handleGymSelect(gymName)}
+                      />
+                      <span className="gym-item-name" onClick={() => handleGymClick(gymName)}>
+                        {gymName}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                {selectedGyms.length >= 2 && (
+                  <button className="compare-button" onClick={handleCompareGyms}>
+                    Compare Selected ({selectedGyms.length})
+                  </button>
                 )}
-                {isActive(item.path) && <div className="nav-item-indicator"></div>}
-              </button>
-            );
-          })}
-        </div>
+              </>
+            )}
+          </div>
+        )}
 
+        {/* Management Section */}
         <div className="nav-section">
-          <h4 className="nav-section-title">Management</h4>
-          {navItems.slice(4).map((item) => {
+          {(!isCollapsed && gymNames.length > 1) && <h4 className="nav-section-title">Management</h4>}
+          {managementItems.map((item) => {
             const IconComponent = item.icon;
             return (
               <button

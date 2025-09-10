@@ -33,18 +33,19 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [owner, setOwner] = useState<Owner | null>(null);
   const [gyms, setGyms] = useState<Gym[]>([]);
+  const [gymNames, setGymNames] = useState<string[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Check for existing authentication on component mount
   useEffect(() => {
     const token = localStorage.getItem('ownerToken');
     const ownerData = localStorage.getItem('ownerData');
-    const gymsData = localStorage.getItem('gymsData');
+    const gymNamesData = localStorage.getItem('gymNamesData');
     
     if (token && ownerData) {
       try {
         const parsedOwner = JSON.parse(ownerData);
-        const parsedGyms = gymsData ? JSON.parse(gymsData) : [];
+        const parsedGymNames = gymNamesData ? JSON.parse(gymNamesData) : [];
         
         // Validate token by making a test API call
         fetch('http://localhost:8080/api/owner/auth/test', {
@@ -55,13 +56,27 @@ function App() {
         .then(response => {
           if (response.ok) {
             setOwner(parsedOwner);
-            setGyms(parsedGyms);
+            setGymNames(parsedGymNames);
+            // Convert gym names to gym objects for backward compatibility
+            const gymObjects = parsedGymNames.map((name: string, index: number) => ({
+              id: `gym-${index}`,
+              name: name,
+              address: '',
+              city: '',
+              state: '',
+              zipCode: '',
+              phone: '',
+              email: '',
+              capacity: 0,
+              description: ''
+            }));
+            setGyms(gymObjects);
             setIsAuthenticated(true);
           } else {
             // Token is invalid, clear it
             localStorage.removeItem('ownerToken');
             localStorage.removeItem('ownerData');
-            localStorage.removeItem('gymsData');
+            localStorage.removeItem('gymNamesData');
             setIsAuthenticated(false);
           }
         })
@@ -69,14 +84,14 @@ function App() {
           // Network error or invalid token
           localStorage.removeItem('ownerToken');
           localStorage.removeItem('ownerData');
-          localStorage.removeItem('gymsData');
+          localStorage.removeItem('gymNamesData');
           setIsAuthenticated(false);
         });
       } catch (error) {
         // Clear invalid data
         localStorage.removeItem('ownerToken');
         localStorage.removeItem('ownerData');
-        localStorage.removeItem('gymsData');
+        localStorage.removeItem('gymNamesData');
         setIsAuthenticated(false);
       }
     } else {
@@ -104,9 +119,23 @@ function App() {
         console.log('Storing token:', data.token);
         localStorage.setItem('ownerToken', data.token);
         localStorage.setItem('ownerData', JSON.stringify(data.owner));
-        localStorage.setItem('gymsData', JSON.stringify(data.gyms || []));
+        localStorage.setItem('gymNamesData', JSON.stringify(data.gymNames || []));
         setOwner(data.owner);
-        setGyms(data.gyms || []);
+        setGymNames(data.gymNames || []);
+        // Convert gym names to gym objects for backward compatibility
+        const gymObjects = (data.gymNames || []).map((name: string, index: number) => ({
+          id: `gym-${index}`,
+          name: name,
+          address: '',
+          city: '',
+          state: '',
+          zipCode: '',
+          phone: '',
+          email: '',
+          capacity: 0,
+          description: ''
+        }));
+        setGyms(gymObjects);
         setIsAuthenticated(true);
         console.log('Authentication successful, token stored');
       } else {
@@ -138,9 +167,23 @@ function App() {
       if (response.ok) {
         localStorage.setItem('ownerToken', data.token);
         localStorage.setItem('ownerData', JSON.stringify(data.owner));
-        localStorage.setItem('gymsData', JSON.stringify(data.gyms || []));
+        localStorage.setItem('gymNamesData', JSON.stringify(data.gymNames || []));
         setOwner(data.owner);
-        setGyms(data.gyms || []);
+        setGymNames(data.gymNames || []);
+        // Convert gym names to gym objects for backward compatibility
+        const gymObjects = (data.gymNames || []).map((name: string, index: number) => ({
+          id: `gym-${index}`,
+          name: name,
+          address: '',
+          city: '',
+          state: '',
+          zipCode: '',
+          phone: '',
+          email: '',
+          capacity: 0,
+          description: ''
+        }));
+        setGyms(gymObjects);
         setIsAuthenticated(true);
       } else {
         setError(data.message || 'Sign up failed');
@@ -155,9 +198,10 @@ function App() {
   const handleSignOut = () => {
     localStorage.removeItem('ownerToken');
     localStorage.removeItem('ownerData');
-    localStorage.removeItem('gymsData');
+    localStorage.removeItem('gymNamesData');
     setOwner(null);
     setGyms([]);
+    setGymNames([]);
     setIsAuthenticated(false);
     setError(null);
   };
@@ -165,8 +209,10 @@ function App() {
   const handleGymAdded = (gymData: any) => {
     const newGym = { ...gymData, id: Date.now().toString() };
     const updatedGyms = [...gyms, newGym];
+    const updatedGymNames = [...gymNames, gymData.name];
     setGyms(updatedGyms);
-    localStorage.setItem('gymsData', JSON.stringify(updatedGyms));
+    setGymNames(updatedGymNames);
+    localStorage.setItem('gymNamesData', JSON.stringify(updatedGymNames));
   };
 
   return (
@@ -176,6 +222,7 @@ function App() {
           isAuthenticated={isAuthenticated}
           owner={owner}
           gyms={gyms}
+          gymNames={gymNames}
           isLoading={isLoading}
           error={error}
           onSignIn={handleSignIn}
@@ -192,6 +239,7 @@ interface AppContentProps {
   isAuthenticated: boolean;
   owner: Owner | null;
   gyms: Gym[];
+  gymNames: string[];
   isLoading: boolean;
   error: string | null;
   onSignIn: (email: string, password: string) => void;
@@ -204,6 +252,7 @@ const AppContent: React.FC<AppContentProps> = ({
   isAuthenticated,
   owner,
   gyms,
+  gymNames,
   isLoading,
   error,
   onSignIn,
@@ -215,10 +264,10 @@ const AppContent: React.FC<AppContentProps> = ({
 
   // Handle redirect after authentication
   useEffect(() => {
-    console.log('AppContent useEffect triggered:', { isAuthenticated, owner: !!owner, gymsCount: gyms.length });
+    console.log('AppContent useEffect triggered:', { isAuthenticated, owner: !!owner, gymNamesCount: gymNames.length });
     
     if (isAuthenticated && owner) {
-      if (gyms.length === 0) {
+      if (gymNames.length === 0) {
         console.log('Redirecting to add-first-gym');
         navigate('/add-first-gym', { replace: true });
       } else {
@@ -229,7 +278,7 @@ const AppContent: React.FC<AppContentProps> = ({
       console.log('Redirecting to signin');
       navigate('/signin', { replace: true });
     }
-  }, [isAuthenticated, owner, gyms.length, navigate]);
+  }, [isAuthenticated, owner, gymNames.length, navigate]);
 
   return (
     <div className="App">
@@ -272,6 +321,7 @@ const AppContent: React.FC<AppContentProps> = ({
               ownerName={owner.name}
               businessName={owner.businessName}
               gyms={gyms}
+              gymNames={gymNames}
               onSignOut={onSignOut}
             />
           ) : (
@@ -282,7 +332,7 @@ const AppContent: React.FC<AppContentProps> = ({
         {/* Default redirect */}
         <Route path="/" element={
           isAuthenticated && owner ? (
-            gyms.length === 0 ? (
+            gymNames.length === 0 ? (
               <Navigate to="/add-first-gym" replace />
             ) : (
               <Navigate to="/dashboard" replace />
@@ -295,7 +345,7 @@ const AppContent: React.FC<AppContentProps> = ({
         {/* Catch all redirect */}
         <Route path="*" element={
           isAuthenticated && owner ? (
-            gyms.length === 0 ? (
+            gymNames.length === 0 ? (
               <Navigate to="/add-first-gym" replace />
             ) : (
               <Navigate to="/dashboard" replace />
