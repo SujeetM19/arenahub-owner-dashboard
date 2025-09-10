@@ -70,6 +70,33 @@
   font-size: 0.9rem;
 }
 
+.form-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.forgot-password-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.forgot-password-link {
+  color: var(--accent-primary, #60a5fa);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: color 0.3s ease;
+  cursor: pointer;
+}
+
+.forgot-password-link:hover {
+  color: var(--accent-secondary, #3b82f6);
+  text-decoration: underline;
+}
+
 .form-input {
   width: 100%;
   padding: 12px 16px;
@@ -104,7 +131,6 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-top: 10px;
 }
 
 .signin-button:hover:not(:disabled) {

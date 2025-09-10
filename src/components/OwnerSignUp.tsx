@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import './OwnerSignUp.css';
 
 interface OwnerSignUpProps {
-  onSignUp: (name: string, email: string, password: string, businessName: string) => void;
+  onSignUp: (name: string, email: string, password: string, businessName: string, profilePicture?: string) => void;
   isLoading: boolean;
   error: string | null;
 }
@@ -18,6 +18,20 @@ const OwnerSignUp: React.FC<OwnerSignUpProps> = ({
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [businessName, setBusinessName] = useState('');
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
+  const [profilePictureFile, setProfilePictureFile] = useState<File | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setProfilePictureFile(file);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setProfilePicture(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,7 +40,7 @@ const OwnerSignUp: React.FC<OwnerSignUpProps> = ({
       return;
     }
     
-    onSignUp(name, email, password, businessName);
+    onSignUp(name, email, password, businessName, profilePicture || undefined);
   };
 
   return (
@@ -76,6 +90,32 @@ const OwnerSignUp: React.FC<OwnerSignUpProps> = ({
               placeholder="Enter your business name"
               required
             />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="profilePicture" className="form-label">Profile Picture (Optional)</label>
+            <div className="profile-picture-upload">
+              <input
+                type="file"
+                id="profilePicture"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="file-input"
+              />
+              <label htmlFor="profilePicture" className="file-label">
+                {profilePicture ? (
+                  <div className="profile-preview">
+                    <img src={profilePicture} alt="Profile preview" className="preview-image" />
+                    <span className="change-text">Change Picture</span>
+                  </div>
+                ) : (
+                  <div className="upload-placeholder">
+                    <span className="upload-icon">📷</span>
+                    <span className="upload-text">Choose Profile Picture</span>
+                  </div>
+                )}
+              </label>
+            </div>
           </div>
 
           <div className="form-group">

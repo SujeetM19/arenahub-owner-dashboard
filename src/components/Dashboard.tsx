@@ -32,10 +32,15 @@ interface DashboardProps {
   businessName: string;
   gyms: Gym[];
   gymNames: string[];
+  owner?: {
+    name: string;
+    profilePicture?: string;
+  };
   onSignOut: () => void;
+  onProfileUpdate?: (updatedOwner: { name: string; profilePicture?: string }) => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ ownerName, businessName, gyms, gymNames, onSignOut }) => {
+const Dashboard: React.FC<DashboardProps> = ({ ownerName, businessName, gyms, gymNames, owner, onSignOut, onProfileUpdate }) => {
   const { theme } = useTheme();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
@@ -44,8 +49,10 @@ const Dashboard: React.FC<DashboardProps> = ({ ownerName, businessName, gyms, gy
       <Sidebar 
         gyms={gyms}
         gymNames={gymNames}
+        owner={owner}
         onCollapseChange={setSidebarCollapsed}
         onSignOut={onSignOut}
+        onProfileUpdate={onProfileUpdate}
       />
       <div className={`dashboard-main ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
         <Routes>

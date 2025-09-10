@@ -67,3 +67,4 @@ const OwnerWelcome: React.FC<OwnerWelcomeProps> = ({ ownerName, businessName, on
 };
 
 export default OwnerWelcome;
+

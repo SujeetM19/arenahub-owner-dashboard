@@ -339,3 +339,4 @@ const CompareCentersPage: React.FC = () => {
 };
 
 export default CompareCentersPage;
+

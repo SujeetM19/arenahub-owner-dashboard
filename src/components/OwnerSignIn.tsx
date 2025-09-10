@@ -63,13 +63,21 @@ const OwnerSignIn: React.FC<OwnerSignInProps> = ({
             </div>
           )}
 
-          <button 
-            type="submit" 
-            className="signin-button"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Signing In...' : 'Sign In'}
-          </button>
+          <div className="form-actions">
+            <button 
+              type="submit" 
+              className="signin-button"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Signing In...' : 'Sign In'}
+            </button>
+            
+            <div className="forgot-password-container">
+              <Link to="/forgot-password" className="forgot-password-link">
+                Forgot Password?
+              </Link>
+            </div>
+          </div>
         </form>
 
         <div className="signin-footer">

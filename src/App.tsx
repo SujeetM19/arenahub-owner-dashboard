@@ -4,6 +4,8 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import VideoBackground from './components/VideoBackground';
 import OwnerSignIn from './components/OwnerSignIn';
 import OwnerSignUp from './components/OwnerSignUp';
+import ForgotPassword from './components/ForgotPassword';
+import ResetPassword from './components/ResetPassword';
 import Dashboard from './components/Dashboard';
 import AddFirstGym from './components/AddFirstGym';
 import './App.css';
@@ -13,6 +15,7 @@ interface Owner {
   name: string;
   email: string;
   businessName: string;
+  profilePicture?: string;
 }
 
 interface Gym {
@@ -149,7 +152,7 @@ function App() {
     }
   };
 
-  const handleSignUp = async (name: string, email: string, password: string, businessName: string) => {
+  const handleSignUp = async (name: string, email: string, password: string, businessName: string, profilePicture?: string) => {
     setIsLoading(true);
     setError(null);
 
@@ -159,7 +162,7 @@ function App() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, email, password, businessName }),
+        body: JSON.stringify({ name, email, password, businessName, profilePicture }),
       });
 
       const data = await response.json();
@@ -215,6 +218,18 @@ function App() {
     localStorage.setItem('gymNamesData', JSON.stringify(updatedGymNames));
   };
 
+  const handleProfileUpdate = (updatedOwner: { name: string; profilePicture?: string }) => {
+    if (owner) {
+      const updatedOwnerData = {
+        ...owner,
+        name: updatedOwner.name,
+        profilePicture: updatedOwner.profilePicture
+      };
+      setOwner(updatedOwnerData);
+      localStorage.setItem('ownerData', JSON.stringify(updatedOwnerData));
+    }
+  };
+
   return (
     <ThemeProvider>
       <Router>
@@ -229,6 +244,7 @@ function App() {
           onSignUp={handleSignUp}
           onSignOut={handleSignOut}
           onGymAdded={handleGymAdded}
+          onProfileUpdate={handleProfileUpdate}
         />
       </Router>
     </ThemeProvider>
@@ -246,6 +262,7 @@ interface AppContentProps {
   onSignUp: (name: string, email: string, password: string, businessName: string) => void;
   onSignOut: () => void;
   onGymAdded: (gymData: any) => void;
+  onProfileUpdate: (updatedOwner: { name: string; profilePicture?: string }) => void;
 }
 
 const AppContent: React.FC<AppContentProps> = ({
@@ -258,7 +275,8 @@ const AppContent: React.FC<AppContentProps> = ({
   onSignIn,
   onSignUp,
   onSignOut,
-  onGymAdded
+  onGymAdded,
+  onProfileUpdate
 }) => {
   const navigate = useNavigate();
 
@@ -275,8 +293,13 @@ const AppContent: React.FC<AppContentProps> = ({
         navigate('/dashboard', { replace: true });
       }
     } else if (!isAuthenticated) {
-      console.log('Redirecting to signin');
-      navigate('/signin', { replace: true });
+      // Only redirect to signin if not already on a public route
+      const currentPath = window.location.pathname;
+      const publicRoutes = ['/signin', '/signup', '/forgot-password', '/reset-password'];
+      if (!publicRoutes.includes(currentPath)) {
+        console.log('Redirecting to signin');
+        navigate('/signin', { replace: true });
+      }
     }
   }, [isAuthenticated, owner, gymNames.length, navigate]);
 
@@ -306,6 +329,20 @@ const AppContent: React.FC<AppContentProps> = ({
           </>
         } />
 
+        <Route path="/forgot-password" element={
+          <>
+            <VideoBackground />
+            <ForgotPassword />
+          </>
+        } />
+
+        <Route path="/reset-password" element={
+          <>
+            <VideoBackground />
+            <ResetPassword />
+          </>
+        } />
+
         {/* Protected Routes */}
         <Route path="/add-first-gym" element={
           isAuthenticated && owner ? (
@@ -322,7 +359,9 @@ const AppContent: React.FC<AppContentProps> = ({
               businessName={owner.businessName}
               gyms={gyms}
               gymNames={gymNames}
+              owner={owner}
               onSignOut={onSignOut}
+              onProfileUpdate={onProfileUpdate}
             />
           ) : (
             <Navigate to="/signin" replace />

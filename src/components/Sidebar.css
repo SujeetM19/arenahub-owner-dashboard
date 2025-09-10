@@ -27,9 +27,38 @@
 
 /* User Profile Section */
 .user-profile-section {
-  padding: 24px 20px;
+  padding: 16px 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   position: relative;
+}
+
+.logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.logo-image {
+  max-height: 50px;
+  max-width: 140px;
+  object-fit: contain;
+  transition: all 0.3s ease;
+  display: block;
+  margin: 0 auto;
+}
+
+.logo-image:hover {
+  transform: scale(1.05);
+}
+
+.user-profile-section .user-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--sidebar-text-active, #ffffff);
+  margin: 0 0 12px 0;
+  line-height: 1.2;
+  text-align: center;
 }
 
 .sidebar.light .user-profile-section {
@@ -39,8 +68,8 @@
 .user-profile {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 20px;
+  gap: 12px;
+  margin-bottom: 0;
 }
 
 .user-avatar-container {
@@ -68,6 +97,170 @@
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
+.profile-image {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+/* Profile Edit Styles */
+.user-avatar {
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.user-avatar:hover {
+  transform: scale(1.05);
+}
+
+.edit-hint {
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.user-avatar:hover .edit-hint {
+  opacity: 1;
+}
+
+.profile-edit-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.profile-picture-input {
+  display: none;
+}
+
+.profile-picture-label {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  position: relative;
+}
+
+.edit-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.profile-picture-label:hover .edit-overlay {
+  opacity: 1;
+}
+
+.edit-icon {
+  font-size: 16px;
+  color: white;
+}
+
+.profile-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.profile-name-input {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 6px 8px;
+  color: white;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.profile-name-input:focus {
+  border-color: #6366f1;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.profile-name-input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.profile-edit-actions {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+
+.save-btn,
+.cancel-btn {
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.save-btn {
+  background: #10b981;
+  color: white;
+}
+
+.save-btn:hover {
+  background: #059669;
+  transform: scale(1.1);
+}
+
+.cancel-btn {
+  background: #ef4444;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background: #dc2626;
+  transform: scale(1.1);
+}
+
+/* Light theme support for edit styles */
+.sidebar.light .profile-name-input {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.2);
+  color: #1f2937;
+}
+
+.sidebar.light .profile-name-input:focus {
+  border-color: #6366f1;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.sidebar.light .profile-name-input::placeholder {
+  color: rgba(0, 0, 0, 0.6);
+}
+
 .status-indicator {
   position: absolute;
   bottom: 2px;
@@ -90,14 +283,21 @@
 }
 
 .user-name {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 700;
   color: var(--sidebar-text-active, #ffffff);
-  margin: 0 0 4px 0;
+  margin: 0 0 8px 0;
   line-height: 1.2;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  text-align: center;
+}
+
+.user-owner-name {
+  font-size: 14px;
+  color: #94a3b8;
+  margin: 0;
+  line-height: 1.2;
+  text-align: left;
+  font-weight: 500;
 }
 
 .dumbbell-icon {
@@ -107,6 +307,10 @@
 }
 
 .sidebar.light .user-name {
+  color: #1e293b;
+}
+
+.sidebar.light .user-profile-section .user-name {
   color: #1e293b;
 }
 
@@ -193,7 +397,7 @@
 /* Navigation Section */
 .sidebar-nav {
   flex: 1;
-  padding: 24px 0;
+  padding: 16px 0;
   overflow-y: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -204,7 +408,7 @@
 }
 
 .nav-section {
-  margin-bottom: 32px;
+  margin-bottom: 16px;
 }
 
 .nav-section-title {
@@ -226,17 +430,17 @@
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 20px;
+  gap: 10px;
+  padding: 10px 20px;
   border: none;
   background: none;
   cursor: pointer;
   transition: all 0.2s ease;
   text-align: left;
   color: var(--sidebar-text, #a0aec0);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
-  margin: 2px 0;
+  margin: 1px 0;
   border-radius: 0;
 }
 
@@ -552,14 +756,14 @@
 
 /* Overview Button Styles */
 .overview-button {
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 /* Overview Divider */
 .overview-divider {
   height: 1px;
   background: rgba(255, 255, 255, 0.1);
-  margin: 0px 0px 12px 0px;
+  margin: 4px 20px 8px 20px;
 }
 
 .sidebar.light .overview-divider {
@@ -568,11 +772,11 @@
 
 /* Gym Section Header */
 .gym-section-header {
-  margin: 0 20px 8px 20px;
+  margin: 0 20px 4px 20px;
 }
 
 .select-gym-text {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: var(--sidebar-section-title, #718096);
   text-transform: uppercase;
@@ -588,12 +792,12 @@
 .gym-search-container {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin: 0 20px 12px 20px;
+  gap: 4px;
+  margin: 0 20px 8px 20px;
   background: var(--sidebar-bg, #1a1a1a);
   border: 1px solid var(--sidebar-border, #333);
-  border-radius: 6px;
-  padding: 6px 8px;
+  border-radius: 4px;
+  padding: 4px 6px;
   transition: all 0.2s ease;
 }
 
@@ -609,7 +813,7 @@
   outline: none;
   color: var(--sidebar-text, #e5e7eb);
   font-size: 12px;
-  padding: 2px 4px;
+  padding: 1px 1px;
   min-width: 0;
 }
 
@@ -624,7 +828,7 @@
   border-radius: 4px;
   color: white;
   cursor: pointer;
-  padding: 4px 6px;
+  padding: 4px 2px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -642,16 +846,16 @@
 .gym-list {
   max-height: 180px;
   overflow-y: auto;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 
 .gym-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 20px;
-  margin: 1px 0;
-  border-radius: 4px;
+  gap: 4px;
+  padding: 4px 20px;
+  margin: 0;
+  border-radius: 3px;
   transition: all 0.2s ease;
 }
 
@@ -700,11 +904,11 @@
 .gym-item-name {
   flex-grow: 1;
   cursor: pointer;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 400;
   color: var(--sidebar-text, #e5e7eb);
   padding: 2px 4px;
-  border-radius: 3px;
+  border-radius: 2px;
   transition: all 0.2s ease;
 }
 
@@ -723,6 +927,35 @@
   cursor: pointer;
   width: 14px;
   height: 14px;
+}
+
+/* Gym List Overflow Indicator */
+.gym-list-overflow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 20px;
+  margin: 2px 0;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.gym-overflow-text {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--sidebar-text-muted, #9ca3af);
+  text-align: center;
+  font-style: italic;
+}
+
+.sidebar.light .gym-list-overflow {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.sidebar.light .gym-overflow-text {
+  color: var(--sidebar-light-text-muted, #6b7280);
 }
 
 .gym-name {
@@ -773,15 +1006,15 @@
 
 .compare-button {
   width: calc(100% - 40px);
-  padding: 8px 12px;
-  margin: 8px 20px;
+  padding: 6px 10px;
+  margin: 4px 20px;
   background: var(--primary-color, #6366f1);
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
   font-weight: 500;
-  font-size: 12px;
+  font-size: 11px;
   transition: background 0.2s ease;
 }
 

@@ -45,11 +45,16 @@ interface Gym {
 interface SidebarProps {
   gyms: Gym[];
   gymNames: string[];
+  owner?: {
+    name: string;
+    profilePicture?: string;
+  };
   onCollapseChange?: (collapsed: boolean) => void;
   onSignOut?: () => void;
+  onProfileUpdate?: (updatedOwner: { name: string; profilePicture?: string }) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ gyms, gymNames, onCollapseChange, onSignOut }) => {
+const Sidebar: React.FC<SidebarProps> = ({ gyms, gymNames, owner, onCollapseChange, onSignOut, onProfileUpdate }) => {
   const { theme, toggleTheme } = useTheme();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [brightness, setBrightness] = useState(100);
@@ -58,6 +63,9 @@ const Sidebar: React.FC<SidebarProps> = ({ gyms, gymNames, onCollapseChange, onS
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filteredGyms, setFilteredGyms] = useState<string[]>(gymNames);
   const [showFilters, setShowFilters] = useState<boolean>(false);
+  const [isEditingProfile, setIsEditingProfile] = useState<boolean>(false);
+  const [editedName, setEditedName] = useState<string>(owner?.name || '');
+  const [editedProfilePicture, setEditedProfilePicture] = useState<string | null>(owner?.profilePicture || null);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -116,6 +124,95 @@ const Sidebar: React.FC<SidebarProps> = ({ gyms, gymNames, onCollapseChange, onS
     setShowFilters(!showFilters);
   };
 
+  const handleEditProfile = () => {
+    setIsEditingProfile(true);
+    setEditedName(owner?.name || '');
+    setEditedProfilePicture(owner?.profilePicture || null);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingProfile(false);
+    setEditedName(owner?.name || '');
+    setEditedProfilePicture(owner?.profilePicture || null);
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      const token = localStorage.getItem('ownerToken');
+      console.log('Retrieved token:', token ? `Token exists (${token.substring(0, 20)}...)` : 'No token found');
+      console.log('Token length:', token ? token.length : 0);
+      console.log('Full token:', token);
+      
+      if (!token) {
+        console.error('No authentication token found');
+        alert('Please sign in again. Your session has expired.');
+        return;
+      }
+
+      console.log('Sending request to:', 'http://localhost:8080/api/owner/profile/update');
+      console.log('Request headers:', {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token.substring(0, 20)}...`
+      });
+      console.log('Request body:', {
+        name: editedName,
+        profilePicture: editedProfilePicture ? 'Base64 image data' : null
+      });
+
+      const response = await fetch('http://localhost:8080/api/owner/profile/update', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name: editedName,
+          profilePicture: editedProfilePicture
+        })
+      });
+
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
+      if (response.ok) {
+        const updatedOwner = await response.json();
+        setIsEditingProfile(false);
+        
+        // Update local state
+        if (owner) {
+          owner.name = updatedOwner.name;
+          owner.profilePicture = updatedOwner.profilePicture;
+        }
+        
+        // Notify parent component
+        if (onProfileUpdate) {
+          onProfileUpdate({
+            name: updatedOwner.name,
+            profilePicture: updatedOwner.profilePicture
+          });
+        }
+      } else {
+        const errorData = await response.json();
+        console.error('Failed to update profile:', errorData);
+        alert('Failed to update profile: ' + (errorData.message || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('Network error while updating profile');
+    }
+  };
+
+  const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setEditedProfilePicture(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const isActive = (path: string) => {
     return location.pathname === path || (path === '/dashboard' && location.pathname === '/dashboard/');
   };
@@ -160,24 +257,109 @@ const Sidebar: React.FC<SidebarProps> = ({ gyms, gymNames, onCollapseChange, onS
     <div className={`sidebar ${theme} ${isCollapsed ? 'collapsed' : ''}`}>
       {/* User Profile Section */}
       <div className="user-profile-section">
+        {!isCollapsed && (
+          <div className="logo-container">
+            <h3 className="user-name" style={{display: 'block'}}>
+              ArenaHub
+            </h3>
+            <img 
+              src="/logo.png" 
+              alt="ArenaHub Logo" 
+              className="logo-image"
+              style={{display: 'none'}}
+              onLoad={(e) => {
+                console.log('Logo loaded successfully');
+                e.currentTarget.style.display = 'block';
+                const fallback = e.currentTarget.previousElementSibling as HTMLElement;
+                if (fallback) fallback.style.display = 'none';
+              }}
+              onError={(e) => {
+                console.log('Logo failed to load, keeping fallback text');
+                e.currentTarget.style.display = 'none';
+                const fallback = e.currentTarget.previousElementSibling as HTMLElement;
+                if (fallback) fallback.style.display = 'block';
+              }}
+            />
+          </div>
+        )}
         <div className="user-profile">
           <div className="user-avatar-container">
-            <div className="user-avatar">
-              <span className="avatar-text">O</span>
+            <div className="user-avatar" onClick={!isCollapsed ? handleEditProfile : undefined}>
+              {isEditingProfile ? (
+                <div className="profile-edit-container">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleProfilePictureChange}
+                    className="profile-picture-input"
+                    id="profile-picture-edit"
+                  />
+                  <label htmlFor="profile-picture-edit" className="profile-picture-label">
+                    {editedProfilePicture ? (
+                      <img 
+                        src={editedProfilePicture} 
+                        alt="Profile" 
+                        className="profile-image"
+                      />
+                    ) : (
+                      <span className="avatar-text">{editedName?.charAt(0)?.toUpperCase() || 'O'}</span>
+                    )}
+                    <div className="edit-overlay">
+                      <span className="edit-icon">📷</span>
+                    </div>
+                  </label>
+                </div>
+              ) : (
+                <>
+                  {owner?.profilePicture ? (
+                    <img 
+                      src={owner.profilePicture} 
+                      alt="Profile" 
+                      className="profile-image"
+                    />
+                  ) : (
+                    <span className="avatar-text">{owner?.name?.charAt(0)?.toUpperCase() || 'O'}</span>
+                  )}
+                  {!isCollapsed && (
+                    <div className="edit-hint">
+                      <span className="edit-hint-text">Click to edit</span>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
-            <div className="status-indicator"></div>
           </div>
           {!isCollapsed && (
             <div className="user-info">
-              <h3 className="user-name">
-                <span className="dumbbell-icon">🏋️</span>
-                GamePlan Owner
-              </h3>
-              <p className="user-role">Administrator</p>
-              <div className="user-status">
-                <span className="status-dot"></span>
-                <span className="status-text">Online</span>
-              </div>
+              {isEditingProfile ? (
+                <div className="profile-edit-form">
+                  <input
+                    type="text"
+                    value={editedName}
+                    onChange={(e) => setEditedName(e.target.value)}
+                    className="profile-name-input"
+                    placeholder="Enter name"
+                  />
+                  <div className="profile-edit-actions">
+                    <button 
+                      className="save-btn" 
+                      onClick={handleSaveProfile}
+                      title="Save changes"
+                    >
+                      ✓
+                    </button>
+                    <button 
+                      className="cancel-btn" 
+                      onClick={handleCancelEdit}
+                      title="Cancel"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <p className="user-owner-name">{owner?.name || 'Owner'}</p>
+              )}
             </div>
           )}
         </div>
@@ -195,59 +377,45 @@ const Sidebar: React.FC<SidebarProps> = ({ gyms, gymNames, onCollapseChange, onS
         {/* All Gyms Section - Only show if more than 1 gym */}
         {gymNames.length > 1 && (
           <div className="nav-section">
-            <button
-              className={`nav-item overview-button ${isActive('/dashboard/all-gyms') ? 'active' : ''}`}
-              onClick={handleOverviewClick}
-            >
-              <div className="nav-item-icon">
-                <Building2 size={18} className="icon" />
-              </div>
-              {!isCollapsed && (
-                <div className="nav-item-content">
-                  <span className="nav-item-label">Overview</span>
+            <div className="gym-section-header">
+              <h5 className="select-gym-text">Select a Gym</h5>
+            </div>
+            <div className="gym-search-container">
+              <input
+                type="text"
+                placeholder="Search gyms..."
+                value={searchQuery}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className="gym-search-input"
+              />
+              <button className="gym-filter-button" onClick={handleFilterToggle}>
+                <Filter size={14} />
+              </button>
+            </div>
+            <div className="gym-list">
+              {filteredGyms.slice(0, 5).map((gymName, index) => (
+                <div key={index} className={`gym-item ${selectedGyms.includes(gymName) ? 'selected' : ''}`}>
+                  <input
+                    type="checkbox"
+                    className="gym-item-checkbox"
+                    checked={selectedGyms.includes(gymName)}
+                    onChange={() => handleGymSelect(gymName)}
+                  />
+                  <span className="gym-item-name" onClick={() => handleGymClick(gymName)}>
+                    {gymName}
+                  </span>
+                </div>
+              ))}
+              {filteredGyms.length > 5 && (
+                <div className="gym-list-overflow">
+                  <span className="gym-overflow-text">+{filteredGyms.length - 5} more gyms</span>
                 </div>
               )}
-              {isActive('/dashboard/all-gyms') && !isCollapsed && <CheckCircle size={16} className="active-indicator" />}
-            </button>
-            {!isCollapsed && <div className="overview-divider"></div>}
-            {!isCollapsed && (
-              <>
-                <div className="gym-section-header">
-                  <h5 className="select-gym-text">Select a Gym</h5>
-                </div>
-                <div className="gym-search-container">
-                  <input
-                    type="text"
-                    placeholder="Search gyms..."
-                    value={searchQuery}
-                    onChange={(e) => handleSearchChange(e.target.value)}
-                    className="gym-search-input"
-                  />
-                  <button className="gym-filter-button" onClick={handleFilterToggle}>
-                    <Filter size={14} />
-                  </button>
-                </div>
-                <div className="gym-list">
-                  {filteredGyms.map((gymName, index) => (
-                    <div key={index} className={`gym-item ${selectedGyms.includes(gymName) ? 'selected' : ''}`}>
-                      <input
-                        type="checkbox"
-                        className="gym-item-checkbox"
-                        checked={selectedGyms.includes(gymName)}
-                        onChange={() => handleGymSelect(gymName)}
-                      />
-                      <span className="gym-item-name" onClick={() => handleGymClick(gymName)}>
-                        {gymName}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-                {selectedGyms.length >= 2 && (
-                  <button className="compare-button" onClick={handleCompareGyms}>
-                    Compare Selected ({selectedGyms.length})
-                  </button>
-                )}
-              </>
+            </div>
+            {selectedGyms.length >= 2 && (
+              <button className="compare-button" onClick={handleCompareGyms}>
+                Compare Selected ({selectedGyms.length})
+              </button>
             )}
           </div>
         )}
@@ -276,6 +444,27 @@ const Sidebar: React.FC<SidebarProps> = ({ gyms, gymNames, onCollapseChange, onS
             );
           })}
         </div>
+
+        {/* Overview Button - Only show if more than 1 gym */}
+        {gymNames.length > 1 && (
+          <div className="nav-section">
+            {!isCollapsed && <div className="overview-divider"></div>}
+            <button
+              className={`nav-item overview-button ${isActive('/dashboard/all-gyms') ? 'active' : ''}`}
+              onClick={handleOverviewClick}
+            >
+              <div className="nav-item-icon">
+                <Building2 size={18} className="icon" />
+              </div>
+              {!isCollapsed && (
+                <div className="nav-item-content">
+                  <span className="nav-item-label">Overview</span>
+                </div>
+              )}
+              {isActive('/dashboard/all-gyms') && !isCollapsed && <CheckCircle size={16} className="active-indicator" />}
+            </button>
+          </div>
+        )}
       </nav>
 
       {/* Footer Section */}

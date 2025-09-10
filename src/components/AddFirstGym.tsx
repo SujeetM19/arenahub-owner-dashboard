@@ -103,7 +103,7 @@ const AddFirstGym: React.FC<AddFirstGymProps> = ({ onGymAdded }) => {
     // Additional Details
     website: '',
     establishedYear: new Date().getFullYear(),
-    totalArea: 0,
+    totalArea: 1,
     
     // Images
     mainImage: '',
@@ -157,7 +157,7 @@ const AddFirstGym: React.FC<AddFirstGymProps> = ({ onGymAdded }) => {
       setFormData(prev => ({
         ...prev,
         [parent]: {
-          ...prev[parent as keyof GymData],
+          ...(prev[parent as keyof GymData] as object || {}),
           [child]: type === 'number' ? parseInt(value) || 0 : value
         }
       }));
