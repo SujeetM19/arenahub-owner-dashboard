@@ -1,4 +1,4 @@
-.gym-information-page {
+.fundamentals-page {
   padding: 2rem;
   min-height: calc(100vh - 80px);
   transition: all 0.3s ease;
@@ -6,19 +6,38 @@
   margin: 0;
   overflow-y: auto;
   overflow-x: hidden;
+  max-height: calc(100vh - 80px);
 }
 
-.gym-information-page.dark {
+.fundamentals-page::-webkit-scrollbar {
+  width: 8px;
+}
+
+.fundamentals-page::-webkit-scrollbar-track {
+  background: var(--bg-tertiary, #1E3A56);
+  border-radius: 4px;
+}
+
+.fundamentals-page::-webkit-scrollbar-thumb {
+  background: var(--border-color, #2D3748);
+  border-radius: 4px;
+}
+
+.fundamentals-page::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted, #A1AEC4);
+}
+
+.fundamentals-page.dark {
   background: var(--bg-primary, #0F2137);
   color: var(--text-primary, #E6E9EF);
 }
 
-.gym-information-page.light {
+.fundamentals-page.light {
   background: var(--bg-secondary);
   color: var(--text-primary);
 }
 
-.gym-info-header {
+.fundamentals-header {
   margin-bottom: 2rem;
 }
 
@@ -53,7 +72,7 @@
   box-shadow: 0 4px 20px var(--shadow);
 }
 
-.gym-information-page.light .gym-info-card {
+.fundamentals-page.light .gym-info-card {
   background: #ffffff;
   border-color: #e0e0e0;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
@@ -68,7 +87,7 @@
   background: var(--bg-tertiary, #1E3A56);
 }
 
-.gym-information-page.light .card-header {
+.fundamentals-page.light .card-header {
   background: #f8f9fa;
   border-bottom-color: #e0e0e0;
 }
@@ -124,7 +143,7 @@
   border: 1px solid var(--border-color, #2D3748);
 }
 
-.gym-information-page.light .info-item {
+.fundamentals-page.light .info-item {
   background: #f8f9fa;
   border-color: #e0e0e0;
 }
@@ -156,7 +175,7 @@
   border: 1px solid var(--border-color, #2D3748);
 }
 
-.gym-information-page.light .description-section {
+.fundamentals-page.light .description-section {
   background: #f8f9fa;
   border-color: #e0e0e0;
 }
@@ -210,8 +229,8 @@
   transition: all 0.3s ease;
 }
 
-.gym-information-page.light .form-group input,
-.gym-information-page.light .form-group textarea {
+.fundamentals-page.light .form-group input,
+.fundamentals-page.light .form-group textarea {
   background: #ffffff;
   border-color: #e0e0e0;
   color: #333;
@@ -282,7 +301,7 @@
   transition: all 0.3s ease;
 }
 
-.gym-information-page.light .amenity-item {
+.fundamentals-page.light .amenity-item {
   background: #f8f9fa;
   border-color: #e0e0e0;
 }
@@ -325,7 +344,7 @@
   font-size: 0.875rem;
 }
 
-.gym-information-page.light .amenity-input-group input {
+.fundamentals-page.light .amenity-input-group input {
   background: #ffffff;
   border-color: #e0e0e0;
   color: #333;

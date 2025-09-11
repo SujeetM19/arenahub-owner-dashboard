@@ -66,6 +66,7 @@ const Sidebar: React.FC<SidebarProps> = ({ gyms, gymNames, owner, onCollapseChan
   const [isEditingProfile, setIsEditingProfile] = useState<boolean>(false);
   const [editedName, setEditedName] = useState<string>(owner?.name || '');
   const [editedProfilePicture, setEditedProfilePicture] = useState<string | null>(owner?.profilePicture || null);
+  const [showGymInfoMenu, setShowGymInfoMenu] = useState<boolean>(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -244,13 +245,17 @@ const Sidebar: React.FC<SidebarProps> = ({ gyms, gymNames, owner, onCollapseChan
   const managementItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/' },
     { id: 'members', label: 'Members', icon: Users, path: '/members' },
-    { id: 'information', label: 'Gym Information', icon: Info, path: '/gym-information' },
     { id: 'analytics', label: 'Analytics', icon: PieChart, path: '/analytics' },
+    { id: 'alerts', label: 'Alerts', icon: AlertTriangle, path: '/alerts' },
+    { id: 'trainers', label: 'Trainers', icon: UserCheck, path: '/trainers' },
+    { id: 'staff', label: 'Staff', icon: UserCheck, path: '/staff' },
+  ];
+
+  // Gym Information submenu items
+  const gymInfoItems = [
+    { id: 'fundamentals', label: 'Fundamentals', icon: Info, path: '/fundamentals' },
     { id: 'membership-plans', label: 'Membership Plans', icon: CreditCard, path: '/membership-plans' },
     { id: 'gallery', label: 'Gallery', icon: Image, path: '/gallery' },
-    { id: 'inventory', label: 'Inventory', icon: Package, path: '/inventory' },
-    { id: 'alerts', label: 'Alerts', icon: AlertTriangle, path: '/alerts' },
-    { id: 'staff', label: 'Staff', icon: UserCheck, path: '/staff' },
   ];
 
   return (
@@ -423,26 +428,139 @@ const Sidebar: React.FC<SidebarProps> = ({ gyms, gymNames, owner, onCollapseChan
         {/* Management Section */}
         <div className="nav-section">
           {(!isCollapsed && gymNames.length > 1) && <h4 className="nav-section-title">Management</h4>}
-          {managementItems.map((item) => {
-            const IconComponent = item.icon;
-            return (
-              <button
-                key={item.id}
-                className={`nav-item ${isActive(item.path) ? 'active' : ''}`}
-                onClick={() => handleNavigation(item.path)}
-              >
-                <div className="nav-item-icon">
-                  <IconComponent size={18} className="icon" />
-                </div>
-                {!isCollapsed && (
-                  <div className="nav-item-content">
-                    <span className="nav-item-label">{item.label}</span>
-                  </div>
-                )}
-                {isActive(item.path) && <div className="nav-item-indicator"></div>}
-              </button>
-            );
-          })}
+          
+          {/* Dashboard */}
+          <button
+            className={`nav-item ${isActive('/') ? 'active' : ''}`}
+            onClick={() => handleNavigation('/')}
+          >
+            <div className="nav-item-icon">
+              <Home size={18} className="icon" />
+            </div>
+            {!isCollapsed && (
+              <div className="nav-item-content">
+                <span className="nav-item-label">Dashboard</span>
+              </div>
+            )}
+            {isActive('/') && <div className="nav-item-indicator"></div>}
+          </button>
+
+          {/* Members */}
+          <button
+            className={`nav-item ${isActive('/members') ? 'active' : ''}`}
+            onClick={() => handleNavigation('/members')}
+          >
+            <div className="nav-item-icon">
+              <Users size={18} className="icon" />
+            </div>
+            {!isCollapsed && (
+              <div className="nav-item-content">
+                <span className="nav-item-label">Members</span>
+              </div>
+            )}
+            {isActive('/members') && <div className="nav-item-indicator"></div>}
+          </button>
+
+          {/* Gym Information Section with Dropdown */}
+          <div 
+            className={`nav-item gym-info-parent ${showGymInfoMenu ? 'active' : ''}`}
+            onMouseEnter={() => setShowGymInfoMenu(true)}
+            onMouseLeave={() => setShowGymInfoMenu(false)}
+          >
+            <div className="nav-item-icon">
+              <Info size={18} className="icon" />
+            </div>
+            {!isCollapsed && (
+              <div className="nav-item-content">
+                <span className="nav-item-label">Gym Information</span>
+                <ChevronRight size={16} className="chevron-icon" />
+              </div>
+            )}
+            {!isCollapsed && showGymInfoMenu && (
+              <div className="gym-info-dropdown">
+                {gymInfoItems.map((item) => {
+                  const IconComponent = item.icon;
+                  return (
+                    <button
+                      key={item.id}
+                      className={`dropdown-item ${isActive(item.path) ? 'active' : ''}`}
+                      onClick={() => {
+                        handleNavigation(item.path);
+                        setShowGymInfoMenu(false);
+                      }}
+                    >
+                      <IconComponent size={16} className="dropdown-icon" />
+                      <span className="dropdown-label">{item.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Analytics */}
+          <button
+            className={`nav-item ${isActive('/analytics') ? 'active' : ''}`}
+            onClick={() => handleNavigation('/analytics')}
+          >
+            <div className="nav-item-icon">
+              <PieChart size={18} className="icon" />
+            </div>
+            {!isCollapsed && (
+              <div className="nav-item-content">
+                <span className="nav-item-label">Analytics</span>
+              </div>
+            )}
+            {isActive('/analytics') && <div className="nav-item-indicator"></div>}
+          </button>
+
+          {/* Alerts */}
+          <button
+            className={`nav-item ${isActive('/alerts') ? 'active' : ''}`}
+            onClick={() => handleNavigation('/alerts')}
+          >
+            <div className="nav-item-icon">
+              <AlertTriangle size={18} className="icon" />
+            </div>
+            {!isCollapsed && (
+              <div className="nav-item-content">
+                <span className="nav-item-label">Alerts</span>
+              </div>
+            )}
+            {isActive('/alerts') && <div className="nav-item-indicator"></div>}
+          </button>
+
+          {/* Trainers */}
+          <button
+            className={`nav-item ${isActive('/trainers') ? 'active' : ''}`}
+            onClick={() => handleNavigation('/trainers')}
+          >
+            <div className="nav-item-icon">
+              <UserCheck size={18} className="icon" />
+            </div>
+            {!isCollapsed && (
+              <div className="nav-item-content">
+                <span className="nav-item-label">Trainers</span>
+              </div>
+            )}
+            {isActive('/trainers') && <div className="nav-item-indicator"></div>}
+          </button>
+
+          {/* Staff */}
+          <button
+            className={`nav-item ${isActive('/staff') ? 'active' : ''}`}
+            onClick={() => handleNavigation('/staff')}
+          >
+            <div className="nav-item-icon">
+              <UserCheck size={18} className="icon" />
+            </div>
+            {!isCollapsed && (
+              <div className="nav-item-content">
+                <span className="nav-item-label">Staff</span>
+              </div>
+            )}
+            {isActive('/staff') && <div className="nav-item-indicator"></div>}
+          </button>
         </div>
 
         {/* Overview Button - Only show if more than 1 gym */}

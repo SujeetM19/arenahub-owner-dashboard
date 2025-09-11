@@ -286,7 +286,7 @@ const AppContent: React.FC<AppContentProps> = ({
     
     if (isAuthenticated && owner) {
       const currentPath = window.location.pathname;
-      const dashboardRoutes = ['/dashboard', '/add-first-gym', '/members', '/gym-information', '/membership-plans', '/analytics', '/notifications', '/alerts', '/compare', '/attendance', '/preferences', '/gallery', '/inventory', '/staff', '/all-gyms'];
+      const dashboardRoutes = ['/dashboard', '/add-first-gym', '/members', '/fundamentals', '/membership-plans', '/gallery', '/inventory', '/trainers', '/staff', '/analytics', '/notifications', '/alerts', '/compare', '/attendance', '/preferences', '/all-gyms'];
       const isOnDashboardRoute = dashboardRoutes.some(route => currentPath.startsWith(route)) || currentPath === '/';
       
       if (gymNames.length === 0) {

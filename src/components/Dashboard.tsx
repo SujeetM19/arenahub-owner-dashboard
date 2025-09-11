@@ -11,8 +11,12 @@ import SendAlertsPage from './SendAlertsPage';
 import CompareCentersPage from './CompareCentersPage';
 import PreferencesPage from './PreferencesPage';
 import AttendancePage from './AttendancePage';
-import GymInformationPage from './GymInformationPage';
+import FundamentalsPage from './FundamentalsPage';
 import MembershipPlansPage from './MembershipPlansPage';
+import GalleryPage from './GalleryPage';
+import InventoryPage from './InventoryPage';
+import StaffPage from './StaffPage';
+import TrainersPage from './TrainersPage';
 import ErrorBoundary from './ErrorBoundary';
 import './Dashboard.css';
 
@@ -157,15 +161,39 @@ const Dashboard: React.FC<DashboardProps> = ({ ownerName, businessName, gyms, gy
             </>
           } />
           
-          <Route path="/gym-information" element={
+          <Route path="/fundamentals" element={
             <>
-              <ErrorBoundary><GymInformationPage /></ErrorBoundary>
+              <ErrorBoundary><FundamentalsPage /></ErrorBoundary>
             </>
           } />
           
           <Route path="/membership-plans" element={
             <>
               <ErrorBoundary><MembershipPlansPage /></ErrorBoundary>
+            </>
+          } />
+          
+          <Route path="/gallery" element={
+            <>
+              <ErrorBoundary><GalleryPage /></ErrorBoundary>
+            </>
+          } />
+          
+          <Route path="/inventory" element={
+            <>
+              <ErrorBoundary><InventoryPage /></ErrorBoundary>
+            </>
+          } />
+          
+          <Route path="/trainers" element={
+            <>
+              <ErrorBoundary><TrainersPage /></ErrorBoundary>
+            </>
+          } />
+          
+          <Route path="/staff" element={
+            <>
+              <ErrorBoundary><StaffPage /></ErrorBoundary>
             </>
           } />
           

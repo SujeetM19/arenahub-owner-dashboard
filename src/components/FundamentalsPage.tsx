@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import { MapPin, Phone, Mail, Clock, Users, Wifi, Car, Dumbbell, Shield, Star } from 'lucide-react';
-import './GymInformationPage.css';
+import './FundamentalsPage.css';
 
 interface GymInfo {
   name: string;
@@ -15,10 +15,10 @@ interface GymInfo {
   rating: number;
 }
 
-const GymInformationPage: React.FC = () => {
+const FundamentalsPage: React.FC = () => {
   const { theme } = useTheme();
   
-  console.log('GymInformationPage rendered');
+  console.log('FundamentalsPage rendered');
   const [gymInfo, setGymInfo] = useState<GymInfo>({
     name: 'New Gym',
     address: '123 Fitness Street, Health City, HC 12345',
@@ -71,9 +71,9 @@ const GymInformationPage: React.FC = () => {
   };
 
   return (
-    <div className={`gym-information-page ${theme}`}>
-      <div className="gym-info-header">
-        <h1 className="page-title">Gym Information</h1>
+    <div className={`fundamentals-page ${theme}`}>
+      <div className="fundamentals-header">
+        <h1 className="page-title">Fundamentals</h1>
         <p className="page-subtitle">Manage your gym's basic information and details</p>
       </div>
 
@@ -293,4 +293,4 @@ const GymInformationPage: React.FC = () => {
   );
 };
 
-export default GymInformationPage;
+export default FundamentalsPage;
