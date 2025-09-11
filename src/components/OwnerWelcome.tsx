@@ -1,4 +1,5 @@
 import React from 'react';
+import { Settings } from 'lucide-react';
 import './OwnerWelcome.css';
 
 interface OwnerWelcomeProps {
@@ -44,7 +45,9 @@ const OwnerWelcome: React.FC<OwnerWelcomeProps> = ({ ownerName, businessName, on
               </div>
             </div>
             <div className="feature-item">
-              <div className="feature-icon">⚙️</div>
+              <div className="feature-icon">
+                <Settings size={24} />
+              </div>
               <div className="feature-text">
                 <h3>Settings & Configuration</h3>
                 <p>Customize your gym settings</p>

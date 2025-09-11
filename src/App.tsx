@@ -285,12 +285,20 @@ const AppContent: React.FC<AppContentProps> = ({
     console.log('AppContent useEffect triggered:', { isAuthenticated, owner: !!owner, gymNamesCount: gymNames.length });
     
     if (isAuthenticated && owner) {
+      const currentPath = window.location.pathname;
+      const dashboardRoutes = ['/dashboard', '/add-first-gym'];
+      const isOnDashboardRoute = dashboardRoutes.some(route => currentPath.startsWith(route));
+      
       if (gymNames.length === 0) {
-        console.log('Redirecting to add-first-gym');
-        navigate('/add-first-gym', { replace: true });
+        if (currentPath !== '/add-first-gym') {
+          console.log('Redirecting to add-first-gym');
+          navigate('/add-first-gym', { replace: true });
+        }
       } else {
-        console.log('Redirecting to dashboard');
-        navigate('/dashboard', { replace: true });
+        if (!isOnDashboardRoute) {
+          console.log('Redirecting to dashboard');
+          navigate('/dashboard', { replace: true });
+        }
       }
     } else if (!isAuthenticated) {
       // Only redirect to signin if not already on a public route

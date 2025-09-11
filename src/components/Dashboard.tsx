@@ -70,21 +70,15 @@ const Dashboard: React.FC<DashboardProps> = ({ ownerName, businessName, gyms, gy
           
           <Route path="/members" element={
             <>
-              <Header 
-                title="Members" 
-                subtitle="Manage your gym members and their information." 
-              />
-              <main className="dashboard-body">
-                <ErrorBoundary><MembersPage /></ErrorBoundary>
-              </main>
+              <MembersPage />
             </>
           } />
           
-          <Route path="/statistics" element={
+          <Route path="/analytics" element={
             <>
               <Header 
-                title="Statistics" 
-                subtitle="View detailed analytics and performance metrics." 
+                title="Analytics" 
+                subtitle="View detailed analytics and performance metrics" 
               />
               <main className="dashboard-body">
                 <ErrorBoundary><StatisticsPage /></ErrorBoundary>
@@ -96,7 +90,7 @@ const Dashboard: React.FC<DashboardProps> = ({ ownerName, businessName, gyms, gy
             <>
               <Header 
                 title="Notifications" 
-                subtitle="Manage notifications and alerts for your members." 
+                subtitle="Manage notifications and alerts for your members" 
               />
               <main className="dashboard-body">
                 <ErrorBoundary><NotificationsPage /></ErrorBoundary>
@@ -108,7 +102,7 @@ const Dashboard: React.FC<DashboardProps> = ({ ownerName, businessName, gyms, gy
             <>
               <Header 
                 title="Send Alerts" 
-                subtitle="Send important alerts and announcements to your members." 
+                subtitle="Send important alerts and announcements to your members" 
               />
               <main className="dashboard-body">
                 <ErrorBoundary><SendAlertsPage /></ErrorBoundary>
@@ -121,7 +115,7 @@ const Dashboard: React.FC<DashboardProps> = ({ ownerName, businessName, gyms, gy
               <>
                 <Header 
                   title="Compare Centers" 
-                  subtitle="Compare performance across different gym locations." 
+                  subtitle="Compare performance across different gym locations" 
                 />
                 <main className="dashboard-body">
                   <ErrorBoundary><CompareCentersPage /></ErrorBoundary>
@@ -134,7 +128,7 @@ const Dashboard: React.FC<DashboardProps> = ({ ownerName, businessName, gyms, gy
             <>
               <Header 
                 title="Attendance" 
-                subtitle="Manage member attendance and QR code check-ins." 
+                subtitle="Manage member attendance and QR code check-ins" 
               />
               <main className="dashboard-body">
                 <ErrorBoundary><AttendancePage /></ErrorBoundary>
@@ -146,7 +140,7 @@ const Dashboard: React.FC<DashboardProps> = ({ ownerName, businessName, gyms, gy
             <>
               <Header 
                 title="Preferences" 
-                subtitle="Configure your account and system preferences." 
+                subtitle="Configure your account and system preferences" 
               />
               <main className="dashboard-body">
                 <ErrorBoundary><PreferencesPage /></ErrorBoundary>

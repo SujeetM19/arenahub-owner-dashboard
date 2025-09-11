@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
+import { CheckCircle, AlertTriangle, XCircle, Info, Bell, Settings, Dumbbell, Shield } from 'lucide-react';
 import './NotificationsPage.css';
 
 interface Notification {
@@ -109,11 +110,11 @@ const NotificationsPage: React.FC = () => {
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'success': return '✅';
-      case 'warning': return '⚠️';
-      case 'error': return '❌';
-      case 'info': return 'ℹ️';
-      default: return '📢';
+      case 'success': return <CheckCircle size={16} />;
+      case 'warning': return <AlertTriangle size={16} />;
+      case 'error': return <XCircle size={16} />;
+      case 'info': return <Info size={16} />;
+      default: return <Bell size={16} />;
     }
   };
 
@@ -138,12 +139,12 @@ const NotificationsPage: React.FC = () => {
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case 'member': return '👥';
-      case 'payment': return '💰';
-      case 'equipment': return '🏋️';
-      case 'maintenance': return '🔧';
-      case 'system': return '⚙️';
-      default: return '📢';
+      case 'member': return <Bell size={16} />;
+      case 'payment': return <Bell size={16} />;
+      case 'equipment': return <Dumbbell size={16} />;
+      case 'maintenance': return <Settings size={16} />;
+      case 'system': return <Shield size={16} />;
+      default: return <Bell size={16} />;
     }
   };
 

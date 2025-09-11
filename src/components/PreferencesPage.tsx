@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
+import { Settings, Bell, Lock, Palette } from 'lucide-react';
 import './PreferencesPage.css';
 
 const PreferencesPage: React.FC = () => {
@@ -79,10 +80,10 @@ const PreferencesPage: React.FC = () => {
   };
 
   const sections = [
-    { id: 'general', label: 'General', icon: '⚙️' },
-    { id: 'notifications', label: 'Notifications', icon: '🔔' },
-    { id: 'security', label: 'Security', icon: '🔒' },
-    { id: 'appearance', label: 'Appearance', icon: '🎨' }
+    { id: 'general', label: 'General', icon: Settings },
+    { id: 'notifications', label: 'Notifications', icon: Bell },
+    { id: 'security', label: 'Security', icon: Lock },
+    { id: 'appearance', label: 'Appearance', icon: Palette }
   ];
 
   return (
@@ -103,7 +104,9 @@ const PreferencesPage: React.FC = () => {
                 className={`nav-item ${activeSection === section.id ? 'active' : ''}`}
                 onClick={() => setActiveSection(section.id)}
               >
-                <span className="nav-icon">{section.icon}</span>
+                <span className="nav-icon">
+                  <section.icon size={18} />
+                </span>
                 <span className="nav-label">{section.label}</span>
               </button>
             ))}

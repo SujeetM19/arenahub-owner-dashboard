@@ -22,10 +22,13 @@
   flex-direction: column;
   min-height: 100vh;
   transition: margin-left 0.3s ease;
+  width: calc(100% - 280px);
+  max-width: none;
 }
 
 .dashboard-main.sidebar-collapsed {
   margin-left: 80px;
+  width: calc(100% - 80px);
 }
 
 .dashboard-body {

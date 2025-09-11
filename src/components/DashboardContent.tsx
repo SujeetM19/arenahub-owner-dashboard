@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import api from '../services/api';
-import { Users, Activity, DollarSign, Dumbbell, CheckCircle, Calendar, RotateCcw, Zap, UserPlus } from 'lucide-react';
+import { Users, Activity, DollarSign, Dumbbell, CheckCircle, Calendar, RotateCcw, Zap, UserPlus, Clock, Bell, AlertTriangle, TrendingUp, TrendingDown, BarChart3, Users2, Timer, AlertCircle } from 'lucide-react';
 import './DashboardContent.css';
 
 const DashboardContent: React.FC = () => {
@@ -65,19 +65,52 @@ const DashboardContent: React.FC = () => {
     { id: 5, user: 'Alex Brown', action: 'Joined gym', time: '20 minutes ago', type: 'join', icon: UserPlus },
   ];
 
-  const upcomingClasses = [
-    { id: 1, name: 'Morning Yoga', time: '6:00 AM', instructor: 'Lisa Chen', capacity: '12/15' },
-    { id: 2, name: 'HIIT Training', time: '7:30 AM', instructor: 'Mark Smith', capacity: '8/12' },
-    { id: 3, name: 'Pilates', time: '9:00 AM', instructor: 'Anna Lee', capacity: '6/10' },
-    { id: 4, name: 'CrossFit', time: '10:30 AM', instructor: 'Tom Wilson', capacity: '15/20' },
+  const gymCrowdTrend = [
+    { time: '6:00 AM', crowdLevel: 25, status: 'Low' },
+    { time: '7:00 AM', crowdLevel: 45, status: 'Medium' },
+    { time: '8:00 AM', crowdLevel: 35, status: 'Low' },
+    { time: '12:00 PM', crowdLevel: 60, status: 'High' },
+    { time: '5:00 PM', crowdLevel: 80, status: 'Peak' },
+    { time: '6:00 PM', crowdLevel: 95, status: 'Peak' },
+    { time: '7:00 PM', crowdLevel: 75, status: 'High' },
+    { time: '8:00 PM', crowdLevel: 40, status: 'Medium' },
   ];
+
+  const recentExpiry = [
+    { id: 1, name: 'John Doe', email: 'john@example.com', expiryDate: '2024-01-15', daysLeft: 3 },
+    { id: 2, name: 'Sarah Wilson', email: 'sarah@example.com', expiryDate: '2024-01-18', daysLeft: 6 },
+    { id: 3, name: 'Mike Johnson', email: 'mike@example.com', expiryDate: '2024-01-20', daysLeft: 8 },
+    { id: 4, name: 'Emily Davis', email: 'emily@example.com', expiryDate: '2024-01-22', daysLeft: 10 },
+  ];
+
+  const getCrowdStatusColor = (status: string) => {
+    switch (status) {
+      case 'Low': return '#10b981';
+      case 'Medium': return '#f59e0b';
+      case 'High': return '#f97316';
+      case 'Peak': return '#ef4444';
+      default: return '#6b7280';
+    }
+  };
+
+  const getExpiryStatusColor = (daysLeft: number) => {
+    if (daysLeft <= 3) return '#ef4444';
+    if (daysLeft <= 7) return '#f59e0b';
+    return '#10b981';
+  };
+
+  const handleSendNotification = async (memberId: number, memberName: string) => {
+    try {
+      // This would call the API to send a notification
+      console.log(`Sending notification to ${memberName} (ID: ${memberId})`);
+      // await api.createNotification({ memberId, message: 'Your membership is expiring soon!' });
+    } catch (error) {
+      console.error('Error sending notification:', error);
+    }
+  };
 
   return (
     <div className={`dashboard-content ${theme}`}>
-      <div className="dashboard-welcome">
-        <h1 className="welcome-title">Welcome back!</h1>
-        <p className="welcome-subtitle">Here's what's happening at your gym today</p>
-      </div>
       <div className="dashboard-grid">
         {/* Stats Cards */}
         <div className="stats-section">
@@ -92,7 +125,7 @@ const DashboardContent: React.FC = () => {
                     <IconComponent size={24} />
                   </div>
                   <div className={`stat-trend ${stat.trend}`}>
-                    {stat.trend === 'up' ? '↗️' : '↘️'} {stat.change}
+                    {stat.trend === 'up' ? <TrendingUp size={14} /> : <TrendingDown size={14} />} {stat.change}
                   </div>
                 </div>
                 <div className="stat-content">
@@ -107,7 +140,10 @@ const DashboardContent: React.FC = () => {
 
         {/* Chart Section */}
         <div className="chart-section">
-          <h2 className="section-title">Revenue Trend</h2>
+          <div className="section-header">
+            <TrendingUp size={20} className="section-icon" />
+            <h2 className="section-title">Revenue Trend</h2>
+          </div>
           <div className={`chart-container ${theme}`}>
             <div className="chart-placeholder">
               <div className="chart-bars">
@@ -134,43 +170,115 @@ const DashboardContent: React.FC = () => {
 
         {/* Recent Activities */}
         <div className="activities-section">
-          <h2 className="section-title">Recent Activities</h2>
+          <div className="section-header">
+            <Activity size={20} className="section-icon" />
+            <h2 className="section-title">Recent Activities</h2>
+          </div>
           <div className={`activities-container ${theme}`}>
-            {recentActivities.map((activity) => {
-              const IconComponent = activity.icon;
-              return (
-                <div key={activity.id} className="activity-item">
-                  <div className="activity-avatar">
-                    <IconComponent size={18} />
-                  </div>
-                  <div className="activity-content">
-                    <div className="activity-text">
-                      <strong>{activity.user}</strong> {activity.action}
+            <div className="activities-content-box">
+              <div className="activities-list">
+                {recentActivities.map((activity) => {
+                  const IconComponent = activity.icon;
+                  return (
+                    <div key={activity.id} className="activity-item">
+                      <div className="activity-avatar">
+                        <IconComponent size={18} />
+                      </div>
+                      <div className="activity-content">
+                        <div className="activity-text">
+                          <strong>{activity.user}</strong> {activity.action}
+                        </div>
+                        <div className="activity-time">
+                          <Clock size={12} />
+                          {activity.time}
+                        </div>
+                      </div>
                     </div>
-                    <div className="activity-time">{activity.time}</div>
-                  </div>
-                </div>
-              );
-            })}
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Upcoming Classes */}
-        <div className="classes-section">
-          <h2 className="section-title">Upcoming Classes</h2>
-          <div className={`classes-container ${theme}`}>
-            {upcomingClasses.map((classItem) => (
-              <div key={classItem.id} className="class-item">
-                <div className="class-info">
-                  <div className="class-name">{classItem.name}</div>
-                  <div className="class-instructor">{classItem.instructor}</div>
-                </div>
-                <div className="class-details">
-                  <div className="class-time">{classItem.time}</div>
-                  <div className="class-capacity">{classItem.capacity}</div>
-                </div>
+        {/* Gym Crowd Trend */}
+        <div className="crowd-trend-section">
+          <div className="section-header">
+            <BarChart3 size={20} className="section-icon" />
+            <h2 className="section-title">Gym Crowd Trend</h2>
+          </div>
+          <div className={`crowd-trend-container ${theme}`}>
+            <div className="crowd-content-box">
+              <div className="crowd-chart">
+                {gymCrowdTrend.map((trend, index) => (
+                  <div key={index} className="crowd-item">
+                    <div className="crowd-bar-container">
+                      <div 
+                        className="crowd-bar"
+                        style={{ 
+                          height: `${trend.crowdLevel}%`,
+                          backgroundColor: getCrowdStatusColor(trend.status)
+                        }}
+                      />
+                    </div>
+                    <div className="crowd-time">
+                      <Clock size={12} />
+                      {trend.time}
+                    </div>
+                    <div 
+                      className="crowd-status"
+                      style={{ color: getCrowdStatusColor(trend.status) }}
+                    >
+                      {trend.status === 'Peak' && <AlertCircle size={10} />}
+                      {trend.status}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Expiry */}
+        <div className="expiry-section">
+          <div className="section-header">
+            <AlertTriangle size={20} className="section-icon" />
+            <h2 className="section-title">Recent Expiry</h2>
+          </div>
+          <div className={`expiry-container ${theme}`}>
+            <div className="expiry-content-box">
+              <div className="expiry-list">
+                {recentExpiry.map((member) => (
+                  <div key={member.id} className="expiry-item">
+                    <div className="expiry-info">
+                      <div className="expiry-member">
+                        <Users2 size={16} className="member-icon" />
+                        <div>
+                          <div className="expiry-name">{member.name}</div>
+                          <div className="expiry-email">{member.email}</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="expiry-details">
+                      <div 
+                        className="expiry-days"
+                        style={{ color: getExpiryStatusColor(member.daysLeft) }}
+                      >
+                        <Timer size={14} />
+                        {member.daysLeft} days left
+                      </div>
+                      <button 
+                        className="notification-btn"
+                        onClick={() => handleSendNotification(member.id, member.name)}
+                        title="Send notification"
+                      >
+                        <Bell size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
