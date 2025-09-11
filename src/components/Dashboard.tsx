@@ -11,6 +11,8 @@ import SendAlertsPage from './SendAlertsPage';
 import CompareCentersPage from './CompareCentersPage';
 import PreferencesPage from './PreferencesPage';
 import AttendancePage from './AttendancePage';
+import GymInformationPage from './GymInformationPage';
+import MembershipPlansPage from './MembershipPlansPage';
 import ErrorBoundary from './ErrorBoundary';
 import './Dashboard.css';
 
@@ -43,6 +45,13 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({ ownerName, businessName, gyms, gymNames, owner, onSignOut, onProfileUpdate }) => {
   const { theme } = useTheme();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  
+  console.log('Dashboard rendered with current path:', window.location.pathname);
+  
+  // If no gyms, redirect to add first gym
+  if (gymNames.length === 0) {
+    return <Navigate to="/add-first-gym" replace />;
+  }
 
   return (
     <div className={`dashboard ${theme}`}>
@@ -148,8 +157,20 @@ const Dashboard: React.FC<DashboardProps> = ({ ownerName, businessName, gyms, gy
             </>
           } />
           
+          <Route path="/gym-information" element={
+            <>
+              <ErrorBoundary><GymInformationPage /></ErrorBoundary>
+            </>
+          } />
+          
+          <Route path="/membership-plans" element={
+            <>
+              <ErrorBoundary><MembershipPlansPage /></ErrorBoundary>
+            </>
+          } />
+          
           {/* Default redirect to dashboard */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
     </div>

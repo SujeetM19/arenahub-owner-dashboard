@@ -286,8 +286,8 @@ const AppContent: React.FC<AppContentProps> = ({
     
     if (isAuthenticated && owner) {
       const currentPath = window.location.pathname;
-      const dashboardRoutes = ['/dashboard', '/add-first-gym'];
-      const isOnDashboardRoute = dashboardRoutes.some(route => currentPath.startsWith(route));
+      const dashboardRoutes = ['/dashboard', '/add-first-gym', '/members', '/gym-information', '/membership-plans', '/analytics', '/notifications', '/alerts', '/compare', '/attendance', '/preferences', '/gallery', '/inventory', '/staff', '/all-gyms'];
+      const isOnDashboardRoute = dashboardRoutes.some(route => currentPath.startsWith(route)) || currentPath === '/';
       
       if (gymNames.length === 0) {
         if (currentPath !== '/add-first-gym') {
@@ -297,7 +297,7 @@ const AppContent: React.FC<AppContentProps> = ({
       } else {
         if (!isOnDashboardRoute) {
           console.log('Redirecting to dashboard');
-          navigate('/dashboard', { replace: true });
+          navigate('/', { replace: true });
         }
       }
     } else if (!isAuthenticated) {
@@ -360,7 +360,8 @@ const AppContent: React.FC<AppContentProps> = ({
           )
         } />
 
-        <Route path="/dashboard/*" element={
+        {/* All dashboard routes */}
+        <Route path="/*" element={
           isAuthenticated && owner ? (
             <Dashboard
               ownerName={owner.name}
@@ -376,26 +377,13 @@ const AppContent: React.FC<AppContentProps> = ({
           )
         } />
 
-        {/* Default redirect */}
-        <Route path="/" element={
-          isAuthenticated && owner ? (
-            gymNames.length === 0 ? (
-              <Navigate to="/add-first-gym" replace />
-            ) : (
-              <Navigate to="/dashboard" replace />
-            )
-          ) : (
-            <Navigate to="/signin" replace />
-          )
-        } />
-        
         {/* Catch all redirect */}
         <Route path="*" element={
           isAuthenticated && owner ? (
             gymNames.length === 0 ? (
               <Navigate to="/add-first-gym" replace />
             ) : (
-              <Navigate to="/dashboard" replace />
+              <Navigate to="/" replace />
             )
           ) : (
             <Navigate to="/signin" replace />

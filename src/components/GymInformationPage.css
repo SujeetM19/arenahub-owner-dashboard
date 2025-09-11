@@ -1,0 +1,407 @@
+.gym-information-page {
+  padding: 2rem;
+  min-height: calc(100vh - 80px);
+  transition: all 0.3s ease;
+  width: 100%;
+  margin: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.gym-information-page.dark {
+  background: var(--bg-primary, #0F2137);
+  color: var(--text-primary, #E6E9EF);
+}
+
+.gym-information-page.light {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.gym-info-header {
+  margin-bottom: 2rem;
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #E6E9EF;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.025em;
+}
+
+.page-subtitle {
+  font-size: 1rem;
+  color: #A1AEC4;
+  margin: 0;
+  font-weight: 400;
+}
+
+.gym-info-content {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.gym-info-card {
+  background: var(--card-bg, #152F4A);
+  border-radius: 16px;
+  border: 1px solid var(--border-color, #1E3A56);
+  overflow: hidden;
+  box-shadow: 0 4px 20px var(--shadow);
+}
+
+.gym-information-page.light .gym-info-card {
+  background: #ffffff;
+  border-color: #e0e0e0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--border-color, #1E3A56);
+  background: var(--bg-tertiary, #1E3A56);
+}
+
+.gym-information-page.light .card-header {
+  background: #f8f9fa;
+  border-bottom-color: #e0e0e0;
+}
+
+.card-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-primary, #E6E9EF);
+}
+
+.edit-btn {
+  background: var(--button-primary-bg, #1A73E8);
+  color: var(--button-primary-text, #FFFFFF);
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.edit-btn:hover {
+  background: var(--button-primary-hover, #1669D5);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(26, 115, 232, 0.3);
+}
+
+.card-content {
+  padding: 2rem;
+}
+
+.info-display {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.info-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--bg-tertiary, #1E3A56);
+  border-radius: 12px;
+  border: 1px solid var(--border-color, #2D3748);
+}
+
+.gym-information-page.light .info-item {
+  background: #f8f9fa;
+  border-color: #e0e0e0;
+}
+
+.info-icon {
+  color: var(--accent-primary, #60a5fa);
+  flex-shrink: 0;
+  margin-top: 0.25rem;
+}
+
+.info-content h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: var(--text-primary, #E6E9EF);
+}
+
+.info-content p {
+  font-size: 0.875rem;
+  margin: 0;
+  color: var(--text-secondary, #A1AEC4);
+  line-height: 1.5;
+}
+
+.description-section {
+  background: var(--bg-tertiary, #1E3A56);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid var(--border-color, #2D3748);
+}
+
+.gym-information-page.light .description-section {
+  background: #f8f9fa;
+  border-color: #e0e0e0;
+}
+
+.description-section h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  color: var(--text-primary, #E6E9EF);
+}
+
+.description-section p {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--text-secondary, #A1AEC4);
+  margin: 0;
+}
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-group label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary, #E6E9EF);
+}
+
+.form-group input,
+.form-group textarea {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color, #2D3748);
+  border-radius: 8px;
+  background: var(--bg-secondary, #152F4A);
+  color: var(--text-primary, #E6E9EF);
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+}
+
+.gym-information-page.light .form-group input,
+.gym-information-page.light .form-group textarea {
+  background: #ffffff;
+  border-color: #e0e0e0;
+  color: #333;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--accent-primary, #60a5fa);
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.save-btn {
+  background: var(--button-primary-bg, #1A73E8);
+  color: var(--button-primary-text, #FFFFFF);
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.save-btn:hover {
+  background: var(--button-primary-hover, #1669D5);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(26, 115, 232, 0.3);
+}
+
+.cancel-btn {
+  background: var(--button-secondary-bg, #1E293B);
+  color: var(--button-secondary-text, #FFFFFF);
+  border: 1px solid var(--border-color, #2D3748);
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cancel-btn:hover {
+  background: var(--button-secondary-hover, #2D3748);
+}
+
+.amenities-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.amenity-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--bg-tertiary, #1E3A56);
+  border-radius: 12px;
+  border: 1px solid var(--border-color, #2D3748);
+  transition: all 0.3s ease;
+}
+
+.gym-information-page.light .amenity-item {
+  background: #f8f9fa;
+  border-color: #e0e0e0;
+}
+
+.amenity-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.amenity-icon {
+  color: var(--accent-primary, #60a5fa);
+  flex-shrink: 0;
+}
+
+.amenity-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary, #E6E9EF);
+}
+
+.amenities-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.amenity-input-group {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.amenity-input-group input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color, #2D3748);
+  border-radius: 8px;
+  background: var(--bg-secondary, #152F4A);
+  color: var(--text-primary, #E6E9EF);
+  font-size: 0.875rem;
+}
+
+.gym-information-page.light .amenity-input-group input {
+  background: #ffffff;
+  border-color: #e0e0e0;
+  color: #333;
+}
+
+.remove-amenity-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.remove-amenity-btn:hover {
+  background: #dc2626;
+}
+
+.add-amenity-btn {
+  background: var(--button-primary-bg, #1A73E8);
+  color: var(--button-primary-text, #FFFFFF);
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  align-self: flex-start;
+}
+
+.add-amenity-btn:hover {
+  background: var(--button-primary-hover, #1669D5);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .gym-information-page {
+    padding: 1rem;
+  }
+  
+  .card-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .info-section {
+    grid-template-columns: 1fr;
+  }
+  
+  .amenities-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 1.5rem;
+  }
+  
+  .card-content {
+    padding: 1rem;
+  }
+  
+  .card-header {
+    padding: 1rem;
+  }
+}

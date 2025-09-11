@@ -1,0 +1,527 @@
+.membership-plans-page {
+  padding: 2rem;
+  min-height: calc(100vh - 80px);
+  transition: all 0.3s ease;
+  width: 100%;
+  margin: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.membership-plans-page.dark {
+  background: var(--bg-primary, #0F2137);
+  color: var(--text-primary, #E6E9EF);
+}
+
+.membership-plans-page.light {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.plans-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.header-content {
+  flex: 1;
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #E6E9EF;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.025em;
+}
+
+.page-subtitle {
+  font-size: 1rem;
+  color: #A1AEC4;
+  margin: 0;
+  font-weight: 400;
+}
+
+.add-plan-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--button-primary-bg, #1A73E8);
+  color: var(--button-primary-text, #FFFFFF);
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(26, 115, 232, 0.2);
+}
+
+.add-plan-btn:hover {
+  background: var(--button-primary-hover, #1669D5);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(26, 115, 232, 0.3);
+}
+
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.plan-card {
+  background: var(--card-bg, #152F4A);
+  border-radius: 16px;
+  border: 1px solid var(--border-color, #1E3A56);
+  padding: 2rem;
+  position: relative;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px var(--shadow);
+}
+
+.membership-plans-page.light .plan-card {
+  background: #ffffff;
+  border-color: #e0e0e0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.plan-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.plan-card.popular {
+  border-color: var(--accent-primary, #60a5fa);
+  box-shadow: 0 4px 20px rgba(96, 165, 250, 0.2);
+}
+
+.popular-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent-primary, #60a5fa);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  box-shadow: 0 4px 12px rgba(96, 165, 250, 0.3);
+}
+
+.plan-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.plan-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  color: var(--text-primary, #E6E9EF);
+}
+
+.plan-price {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.price-amount {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--accent-primary, #60a5fa);
+}
+
+.price-duration {
+  font-size: 1rem;
+  color: var(--text-secondary, #A1AEC4);
+  text-transform: capitalize;
+}
+
+.plan-description {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.plan-description p {
+  font-size: 0.875rem;
+  color: var(--text-secondary, #A1AEC4);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.plan-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: var(--bg-tertiary, #1E3A56);
+  border-radius: 12px;
+  border: 1px solid var(--border-color, #2D3748);
+}
+
+.membership-plans-page.light .plan-details {
+  background: #f8f9fa;
+  border-color: #e0e0e0;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--text-primary, #E6E9EF);
+}
+
+.detail-item svg {
+  color: var(--accent-primary, #60a5fa);
+  flex-shrink: 0;
+}
+
+.plan-features {
+  margin-bottom: 2rem;
+}
+
+.plan-features h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  color: var(--text-primary, #E6E9EF);
+}
+
+.plan-features ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.plan-features li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--text-primary, #E6E9EF);
+}
+
+.plan-features li svg {
+  color: #10b981;
+  flex-shrink: 0;
+}
+
+.plan-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.edit-plan-btn,
+.delete-plan-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.edit-plan-btn {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.edit-plan-btn:hover {
+  background: rgba(59, 130, 246, 0.2);
+  transform: translateY(-2px);
+}
+
+.delete-plan-btn {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.delete-plan-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal {
+  background: var(--card-bg, #152F4A);
+  border-radius: 16px;
+  border: 1px solid var(--border-color, #1E3A56);
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.membership-plans-page.light .modal {
+  background: #ffffff;
+  border-color: #e0e0e0;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--border-color, #1E3A56);
+}
+
+.membership-plans-page.light .modal-header {
+  border-bottom-color: #e0e0e0;
+}
+
+.modal-header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-primary, #E6E9EF);
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-secondary, #A1AEC4);
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+  background: var(--bg-tertiary, #1E3A56);
+  color: var(--text-primary, #E6E9EF);
+}
+
+.modal-content {
+  padding: 2rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: var(--text-primary, #E6E9EF);
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color, #2D3748);
+  border-radius: 8px;
+  background: var(--bg-secondary, #152F4A);
+  color: var(--text-primary, #E6E9EF);
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+}
+
+.membership-plans-page.light .form-group input,
+.membership-plans-page.light .form-group textarea,
+.membership-plans-page.light .form-group select {
+  background: #ffffff;
+  border-color: #e0e0e0;
+  color: #333;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--accent-primary, #60a5fa);
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+}
+
+.form-group input[type="checkbox"] {
+  width: auto;
+  margin-right: 0.5rem;
+}
+
+.features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.feature-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: var(--bg-tertiary, #1E3A56);
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #2D3748);
+}
+
+.membership-plans-page.light .feature-item {
+  background: #f8f9fa;
+  border-color: #e0e0e0;
+}
+
+.remove-feature-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.25rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.remove-feature-btn:hover {
+  background: #dc2626;
+}
+
+.add-feature input {
+  margin: 0;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  padding: 1.5rem 2rem;
+  border-top: 1px solid var(--border-color, #1E3A56);
+}
+
+.membership-plans-page.light .modal-actions {
+  border-top-color: #e0e0e0;
+}
+
+.cancel-btn,
+.save-btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.cancel-btn {
+  background: var(--button-secondary-bg, #1E293B);
+  color: var(--button-secondary-text, #FFFFFF);
+  border: 1px solid var(--border-color, #2D3748);
+}
+
+.cancel-btn:hover {
+  background: var(--button-secondary-hover, #2D3748);
+}
+
+.save-btn {
+  background: var(--button-primary-bg, #1A73E8);
+  color: var(--button-primary-text, #FFFFFF);
+}
+
+.save-btn:hover {
+  background: var(--button-primary-hover, #1669D5);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(26, 115, 232, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .membership-plans-page {
+    padding: 1rem;
+  }
+  
+  .plans-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .plans-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .plan-actions {
+    flex-direction: column;
+  }
+  
+  .modal {
+    margin: 1rem;
+  }
+  
+  .modal-content {
+    padding: 1rem;
+  }
+  
+  .modal-header {
+    padding: 1rem;
+  }
+  
+  .modal-actions {
+    padding: 1rem;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 1.5rem;
+  }
+  
+  .plan-card {
+    padding: 1.5rem;
+  }
+  
+  .price-amount {
+    font-size: 2rem;
+  }
+}

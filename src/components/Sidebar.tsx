@@ -95,12 +95,12 @@ const Sidebar: React.FC<SidebarProps> = ({ gyms, gymNames, owner, onCollapseChan
 
   const handleGymClick = (gymName: string) => {
     setCurrentGym(gymName);
-    navigate('/dashboard');
+    navigate('/');
   };
 
   const handleCompareGyms = () => {
     if (selectedGyms.length >= 2) {
-      navigate('/dashboard/compare');
+      navigate('/compare');
     }
   };
 
@@ -117,7 +117,7 @@ const Sidebar: React.FC<SidebarProps> = ({ gyms, gymNames, owner, onCollapseChan
   };
 
   const handleOverviewClick = () => {
-    navigate('/dashboard/all-gyms');
+    navigate('/all-gyms');
   };
 
   const handleFilterToggle = () => {
@@ -214,7 +214,7 @@ const Sidebar: React.FC<SidebarProps> = ({ gyms, gymNames, owner, onCollapseChan
   };
 
   const isActive = (path: string) => {
-    return location.pathname === path || (path === '/dashboard' && location.pathname === '/dashboard/');
+    return location.pathname === path || (path === '/' && location.pathname === '/');
   };
 
   const handleBrightnessChange = (value: number) => {
@@ -242,15 +242,15 @@ const Sidebar: React.FC<SidebarProps> = ({ gyms, gymNames, owner, onCollapseChan
 
   // Management section items (same for all owners)
   const managementItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/dashboard' },
-    { id: 'members', label: 'Members', icon: Users, path: '/dashboard/members' },
-    { id: 'information', label: 'Information', icon: Info, path: '/dashboard/information' },
-    { id: 'analytics', label: 'Analytics', icon: PieChart, path: '/dashboard/analytics' },
-    { id: 'membership-plans', label: 'Membership Plans', icon: CreditCard, path: '/dashboard/membership-plans' },
-    { id: 'gallery', label: 'Gallery', icon: Image, path: '/dashboard/gallery' },
-    { id: 'inventory', label: 'Inventory', icon: Package, path: '/dashboard/inventory' },
-    { id: 'alerts', label: 'Alerts', icon: AlertTriangle, path: '/dashboard/alerts' },
-    { id: 'staff', label: 'Staff', icon: UserCheck, path: '/dashboard/staff' },
+    { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/' },
+    { id: 'members', label: 'Members', icon: Users, path: '/members' },
+    { id: 'information', label: 'Gym Information', icon: Info, path: '/gym-information' },
+    { id: 'analytics', label: 'Analytics', icon: PieChart, path: '/analytics' },
+    { id: 'membership-plans', label: 'Membership Plans', icon: CreditCard, path: '/membership-plans' },
+    { id: 'gallery', label: 'Gallery', icon: Image, path: '/gallery' },
+    { id: 'inventory', label: 'Inventory', icon: Package, path: '/inventory' },
+    { id: 'alerts', label: 'Alerts', icon: AlertTriangle, path: '/alerts' },
+    { id: 'staff', label: 'Staff', icon: UserCheck, path: '/staff' },
   ];
 
   return (
@@ -450,7 +450,7 @@ const Sidebar: React.FC<SidebarProps> = ({ gyms, gymNames, owner, onCollapseChan
           <div className="nav-section">
             {!isCollapsed && <div className="overview-divider"></div>}
             <button
-              className={`nav-item overview-button ${isActive('/dashboard/all-gyms') ? 'active' : ''}`}
+              className={`nav-item overview-button ${isActive('/all-gyms') ? 'active' : ''}`}
               onClick={handleOverviewClick}
             >
               <div className="nav-item-icon">
@@ -461,7 +461,7 @@ const Sidebar: React.FC<SidebarProps> = ({ gyms, gymNames, owner, onCollapseChan
                   <span className="nav-item-label">Overview</span>
                 </div>
               )}
-              {isActive('/dashboard/all-gyms') && !isCollapsed && <CheckCircle size={16} className="active-indicator" />}
+              {isActive('/all-gyms') && !isCollapsed && <CheckCircle size={16} className="active-indicator" />}
             </button>
           </div>
         )}
