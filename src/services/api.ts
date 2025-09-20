@@ -127,15 +127,15 @@ class ApiService {
     return response.json();
   }
 
-  // Centers API
-  async getCenters() {
+  // Centers API (Legacy)
+  async getCentersLegacy() {
     const response = await fetch(`${API_BASE_URL}/centers`, {
       headers: this.getAuthHeaders(),
     });
     return response.json();
   }
 
-  async createCenter(centerData: any) {
+  async createCenterLegacy(centerData: any) {
     const response = await fetch(`${API_BASE_URL}/centers`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
@@ -181,6 +181,322 @@ class ApiService {
       ? `${API_BASE_URL}/attendance/history?memberId=${memberId}`
       : `${API_BASE_URL}/attendance/history`;
     const response = await fetch(url, {
+      headers: this.getAuthHeaders(),
+    });
+    return response.json();
+  }
+
+  // Gallery API
+  async getGalleryItems(queryParams = '') {
+    const url = queryParams ? `${API_BASE_URL}/gallery?${queryParams}` : `${API_BASE_URL}/gallery`;
+    const response = await fetch(url, {
+      headers: this.getAuthHeaders(),
+    });
+    return response.json();
+  }
+
+  async createGalleryItem(galleryData: any) {
+    const response = await fetch(`${API_BASE_URL}/gallery`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(galleryData),
+    });
+    return response.json();
+  }
+
+  async updateGalleryItem(id: number, galleryData: any) {
+    const response = await fetch(`${API_BASE_URL}/gallery/${id}`, {
+      method: 'PUT',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(galleryData),
+    });
+    return response.json();
+  }
+
+  async deleteGalleryItem(id: number) {
+    const response = await fetch(`${API_BASE_URL}/gallery/${id}`, {
+      method: 'DELETE',
+      headers: this.getAuthHeaders(),
+    });
+    return response.json();
+  }
+
+  async deleteGalleryItems(ids: number[]) {
+    const response = await fetch(`${API_BASE_URL}/gallery/bulk`, {
+      method: 'DELETE',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(ids),
+    });
+    return response.json();
+  }
+
+  async getGalleryStats() {
+    const response = await fetch(`${API_BASE_URL}/gallery/stats`, {
+      headers: this.getAuthHeaders(),
+    });
+    return response.json();
+  }
+
+  // Inventory API
+  async getInventoryItems(queryParams = '') {
+    const url = queryParams ? `${API_BASE_URL}/inventory?${queryParams}` : `${API_BASE_URL}/inventory`;
+    const response = await fetch(url, {
+      headers: this.getAuthHeaders(),
+    });
+    return response.json();
+  }
+
+  async createInventoryItem(inventoryData: any) {
+    const response = await fetch(`${API_BASE_URL}/inventory`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(inventoryData),
+    });
+    return response.json();
+  }
+
+  async updateInventoryItem(id: number, inventoryData: any) {
+    const response = await fetch(`${API_BASE_URL}/inventory/${id}`, {
+      method: 'PUT',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(inventoryData),
+    });
+    return response.json();
+  }
+
+  async deleteInventoryItem(id: number) {
+    const response = await fetch(`${API_BASE_URL}/inventory/${id}`, {
+      method: 'DELETE',
+      headers: this.getAuthHeaders(),
+    });
+    return response.json();
+  }
+
+  async deleteInventoryItems(ids: number[]) {
+    const response = await fetch(`${API_BASE_URL}/inventory/bulk`, {
+      method: 'DELETE',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(ids),
+    });
+    return response.json();
+  }
+
+  async getInventoryStats() {
+    const response = await fetch(`${API_BASE_URL}/inventory/stats`, {
+      headers: this.getAuthHeaders(),
+    });
+    return response.json();
+  }
+
+  async getLowStockItems() {
+    const response = await fetch(`${API_BASE_URL}/inventory/low-stock`, {
+      headers: this.getAuthHeaders(),
+    });
+    return response.json();
+  }
+
+  async getOutOfStockItems() {
+    const response = await fetch(`${API_BASE_URL}/inventory/out-of-stock`, {
+      headers: this.getAuthHeaders(),
+    });
+    return response.json();
+  }
+
+  // Staff API
+  async getStaff(queryParams = '') {
+    const url = queryParams ? `${API_BASE_URL}/staff?${queryParams}` : `${API_BASE_URL}/staff`;
+    const response = await fetch(url, {
+      headers: this.getAuthHeaders(),
+    });
+    return response.json();
+  }
+
+  async createStaff(staffData: any) {
+    const response = await fetch(`${API_BASE_URL}/staff`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(staffData),
+    });
+    return response.json();
+  }
+
+  async updateStaff(id: number, staffData: any) {
+    const response = await fetch(`${API_BASE_URL}/staff/${id}`, {
+      method: 'PUT',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(staffData),
+    });
+    return response.json();
+  }
+
+  async deleteStaff(id: number) {
+    const response = await fetch(`${API_BASE_URL}/staff/${id}`, {
+      method: 'DELETE',
+      headers: this.getAuthHeaders(),
+    });
+    return response.json();
+  }
+
+  async deleteStaffBulk(ids: number[]) {
+    const response = await fetch(`${API_BASE_URL}/staff/bulk`, {
+      method: 'DELETE',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(ids),
+    });
+    return response.json();
+  }
+
+  async getStaffStats() {
+    const response = await fetch(`${API_BASE_URL}/staff/stats`, {
+      headers: this.getAuthHeaders(),
+    });
+    return response.json();
+  }
+
+  async getActiveStaff() {
+    const response = await fetch(`${API_BASE_URL}/staff/active`, {
+      headers: this.getAuthHeaders(),
+    });
+    return response.json();
+  }
+
+  // Trainers API
+  async getTrainers(queryParams = '') {
+    const url = queryParams ? `${API_BASE_URL}/trainers?${queryParams}` : `${API_BASE_URL}/trainers`;
+    const response = await fetch(url, {
+      headers: this.getAuthHeaders(),
+    });
+    return response.json();
+  }
+
+  async createTrainer(trainerData: any) {
+    const response = await fetch(`${API_BASE_URL}/trainers`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(trainerData),
+    });
+    return response.json();
+  }
+
+  async updateTrainer(id: number, trainerData: any) {
+    const response = await fetch(`${API_BASE_URL}/trainers/${id}`, {
+      method: 'PUT',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(trainerData),
+    });
+    return response.json();
+  }
+
+  async deleteTrainer(id: number) {
+    const response = await fetch(`${API_BASE_URL}/trainers/${id}`, {
+      method: 'DELETE',
+      headers: this.getAuthHeaders(),
+    });
+    return response.json();
+  }
+
+  async deleteTrainers(ids: number[]) {
+    const response = await fetch(`${API_BASE_URL}/trainers/bulk`, {
+      method: 'DELETE',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(ids),
+    });
+    return response.json();
+  }
+
+  async getTrainerStats() {
+    const response = await fetch(`${API_BASE_URL}/trainers/stats`, {
+      headers: this.getAuthHeaders(),
+    });
+    return response.json();
+  }
+
+  async getActiveTrainers() {
+    const response = await fetch(`${API_BASE_URL}/trainers/active`, {
+      headers: this.getAuthHeaders(),
+    });
+    return response.json();
+  }
+
+  // Fundamentals API
+  async getCenters() {
+    const response = await fetch(`${API_BASE_URL}/fundamentals/centers`, {
+      headers: this.getAuthHeaders(),
+    });
+    return response.json();
+  }
+
+  async getCenterById(id: number) {
+    const response = await fetch(`${API_BASE_URL}/fundamentals/centers/${id}`, {
+      headers: this.getAuthHeaders(),
+    });
+    return response.json();
+  }
+
+  async updateCenter(id: number, centerData: any) {
+    const response = await fetch(`${API_BASE_URL}/fundamentals/centers/${id}`, {
+      method: 'PUT',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(centerData),
+    });
+    return response.json();
+  }
+
+  async createCenter(centerData: any) {
+    const response = await fetch(`${API_BASE_URL}/fundamentals/centers`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(centerData),
+    });
+    return response.json();
+  }
+
+  async deleteCenter(id: number) {
+    const response = await fetch(`${API_BASE_URL}/fundamentals/centers/${id}`, {
+      method: 'DELETE',
+      headers: this.getAuthHeaders(),
+    });
+    return response.json();
+  }
+
+  // Analytics API
+  async getAnalytics(centerId: number, period: string = 'month') {
+    const response = await fetch(`${API_BASE_URL}/analytics/${centerId}?period=${period}`, {
+      headers: this.getAuthHeaders(),
+    });
+    return response.json();
+  }
+
+  async getRevenueAnalytics(centerId: number, period: string = 'month') {
+    const response = await fetch(`${API_BASE_URL}/analytics/${centerId}/revenue?period=${period}`, {
+      headers: this.getAuthHeaders(),
+    });
+    return response.json();
+  }
+
+  async getAttendanceAnalytics(centerId: number, period: string = 'month') {
+    const response = await fetch(`${API_BASE_URL}/analytics/${centerId}/attendance?period=${period}`, {
+      headers: this.getAuthHeaders(),
+    });
+    return response.json();
+  }
+
+  async getMemberAnalytics(centerId: number, period: string = 'month') {
+    const response = await fetch(`${API_BASE_URL}/analytics/${centerId}/members?period=${period}`, {
+      headers: this.getAuthHeaders(),
+    });
+    return response.json();
+  }
+
+  async getGeneralAnalytics(centerId: number, period: string = 'month') {
+    const response = await fetch(`${API_BASE_URL}/analytics/${centerId}/general?period=${period}`, {
+      headers: this.getAuthHeaders(),
+    });
+    return response.json();
+  }
+
+  async getKeyMetrics(centerId: number) {
+    const response = await fetch(`${API_BASE_URL}/analytics/${centerId}/metrics`, {
       headers: this.getAuthHeaders(),
     });
     return response.json();

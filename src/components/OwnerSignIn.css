@@ -114,10 +114,28 @@
   border-color: var(--accent-primary, #60a5fa);
   box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
   background: var(--bg-primary, #0f1419);
+  color: var(--text-primary, #ffffff);
 }
 
 .form-input::placeholder {
   color: var(--text-muted, #718096);
+}
+
+/* Ensure text is always visible in input fields */
+.form-input[type="text"],
+.form-input[type="email"],
+.form-input[type="password"],
+.form-input[type="tel"] {
+  color: var(--text-primary, #ffffff) !important;
+  background: var(--bg-primary, #0f1419) !important;
+}
+
+.form-input[type="text"]:focus,
+.form-input[type="email"]:focus,
+.form-input[type="password"]:focus,
+.form-input[type="tel"]:focus {
+  color: var(--text-primary, #ffffff) !important;
+  background: var(--bg-primary, #0f1419) !important;
 }
 
 .signin-button {

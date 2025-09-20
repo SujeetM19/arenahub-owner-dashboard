@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import { Plus, Search, Filter, Edit, Trash2, User, Mail, Phone, Calendar, Shield, Clock, DollarSign } from 'lucide-react';
+import api from '../services/api';
 import './StaffPage.css';
 
 interface StaffMember {
-  id: string;
+  id: number;
   name: string;
   email: string;
   phone: string;
@@ -12,97 +13,24 @@ interface StaffMember {
   department: string;
   hireDate: string;
   salary: number;
-  status: 'Active' | 'Inactive' | 'On Leave';
+  status: 'ACTIVE' | 'INACTIVE' | 'ON_LEAVE';
   permissions: string[];
-  emergencyContact: {
-    name: string;
-    phone: string;
-    relationship: string;
-  };
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  emergencyContactRelationship: string;
   address: string;
   notes?: string;
+  centerId?: number;
+  centerName?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 const StaffPage: React.FC = () => {
   const { theme } = useTheme();
-  const [staffMembers, setStaffMembers] = useState<StaffMember[]>([
-    {
-      id: '1',
-      name: 'John Smith',
-      email: 'john.smith@gym.com',
-      phone: '+1 (555) 123-4567',
-      position: 'Manager',
-      department: 'Operations',
-      hireDate: '2023-01-15',
-      salary: 55000,
-      status: 'Active',
-      permissions: ['Full Access', 'Member Management', 'Financial Reports'],
-      emergencyContact: {
-        name: 'Jane Smith',
-        phone: '+1 (555) 123-4568',
-        relationship: 'Spouse'
-      },
-      address: '123 Main St, City, State 12345',
-      notes: 'Experienced fitness professional with 5+ years in management'
-    },
-    {
-      id: '2',
-      name: 'Sarah Johnson',
-      email: 'sarah.johnson@gym.com',
-      phone: '+1 (555) 234-5678',
-      position: 'Personal Trainer',
-      department: 'Training',
-      hireDate: '2023-03-20',
-      salary: 45000,
-      status: 'Active',
-      permissions: ['Member Management', 'Training Schedules'],
-      emergencyContact: {
-        name: 'Mike Johnson',
-        phone: '+1 (555) 234-5679',
-        relationship: 'Brother'
-      },
-      address: '456 Oak Ave, City, State 12345',
-      notes: 'Certified personal trainer specializing in strength training'
-    },
-    {
-      id: '3',
-      name: 'Mike Davis',
-      email: 'mike.davis@gym.com',
-      phone: '+1 (555) 345-6789',
-      position: 'Receptionist',
-      department: 'Front Desk',
-      hireDate: '2023-06-10',
-      salary: 35000,
-      status: 'On Leave',
-      permissions: ['Member Check-in', 'Basic Reports'],
-      emergencyContact: {
-        name: 'Lisa Davis',
-        phone: '+1 (555) 345-6790',
-        relationship: 'Mother'
-      },
-      address: '789 Pine St, City, State 12345',
-      notes: 'Currently on maternity leave until March 2024'
-    },
-    {
-      id: '4',
-      name: 'Emily Wilson',
-      email: 'emily.wilson@gym.com',
-      phone: '+1 (555) 456-7890',
-      position: 'Group Fitness Instructor',
-      department: 'Training',
-      hireDate: '2023-08-05',
-      salary: 40000,
-      status: 'Active',
-      permissions: ['Class Scheduling', 'Member Management'],
-      emergencyContact: {
-        name: 'Tom Wilson',
-        phone: '+1 (555) 456-7891',
-        relationship: 'Father'
-      },
-      address: '321 Elm St, City, State 12345',
-      notes: 'Specializes in yoga and pilates classes'
-    }
-  ]);
+  const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('All');
@@ -117,20 +45,90 @@ const StaffPage: React.FC = () => {
     department: '',
     hireDate: new Date().toISOString().split('T')[0],
     salary: 0,
-    status: 'Active',
+    status: 'ACTIVE',
     permissions: [],
-    emergencyContact: {
-      name: '',
-      phone: '',
-      relationship: ''
-    },
+    emergencyContactName: '',
+    emergencyContactPhone: '',
+    emergencyContactRelationship: '',
     address: '',
     notes: ''
   });
 
-  const departments = ['All', 'Operations', 'Training', 'Front Desk', 'Maintenance', 'Management'];
-  const statuses = ['All', 'Active', 'Inactive', 'On Leave'];
+  const departments = ['All', 'OPERATIONS', 'TRAINING', 'FRONT_DESK', 'MAINTENANCE', 'MANAGEMENT', 'CLEANING', 'SECURITY'];
+  const statuses = ['All', 'ACTIVE', 'INACTIVE', 'ON_LEAVE'];
   const positions = ['Manager', 'Personal Trainer', 'Group Fitness Instructor', 'Receptionist', 'Maintenance', 'Cleaner', 'Security'];
+
+  // Load staff members from API
+  useEffect(() => {
+    loadStaffMembers();
+  }, []);
+
+  const loadStaffMembers = async () => {
+    try {
+      setLoading(true);
+      const response = await api.getStaff();
+      setStaffMembers(response.content || response);
+    } catch (err) {
+      setError('Failed to load staff members');
+      console.error('Error loading staff members:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddMember = async () => {
+    try {
+      const response = await api.createStaff({
+        ...newMember,
+        centerId: 1 // Default center ID, should be dynamic
+      });
+      setStaffMembers(prev => [response, ...prev]);
+      setShowAddModal(false);
+      setNewMember({
+        name: '',
+        email: '',
+        phone: '',
+        position: '',
+        department: '',
+        hireDate: new Date().toISOString().split('T')[0],
+        salary: 0,
+        status: 'ACTIVE',
+        permissions: [],
+        emergencyContactName: '',
+        emergencyContactPhone: '',
+        emergencyContactRelationship: '',
+        address: '',
+        notes: ''
+      });
+    } catch (err) {
+      setError('Failed to add staff member');
+      console.error('Error adding staff member:', err);
+    }
+  };
+
+  const handleEditMember = async (member: StaffMember) => {
+    try {
+      const response = await api.updateStaff(member.id, {
+        ...member,
+        centerId: 1 // Default center ID, should be dynamic
+      });
+      setStaffMembers(prev => prev.map(m => m.id === member.id ? response : m));
+      setEditingMember(null);
+    } catch (err) {
+      setError('Failed to update staff member');
+      console.error('Error updating staff member:', err);
+    }
+  };
+
+  const handleDeleteMember = async (id: number) => {
+    try {
+      await api.deleteStaff(id);
+      setStaffMembers(prev => prev.filter(member => member.id !== id));
+    } catch (err) {
+      setError('Failed to delete staff member');
+      console.error('Error deleting staff member:', err);
+    }
+  };
 
   const filteredMembers = staffMembers.filter(member => {
     const matchesSearch = member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -143,61 +141,25 @@ const StaffPage: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Active': return '#22c55e';
-      case 'Inactive': return '#6b7280';
-      case 'On Leave': return '#f59e0b';
+      case 'ACTIVE': return '#22c55e';
+      case 'INACTIVE': return '#6b7280';
+      case 'ON_LEAVE': return '#f59e0b';
       default: return '#6b7280';
     }
   };
 
-  const handleAddMember = () => {
-    const member: StaffMember = {
-      ...newMember,
-      id: Date.now().toString()
-    };
-    setStaffMembers([...staffMembers, member]);
-    setNewMember({
-      name: '',
-      email: '',
-      phone: '',
-      position: '',
-      department: '',
-      hireDate: new Date().toISOString().split('T')[0],
-      salary: 0,
-      status: 'Active',
-      permissions: [],
-      emergencyContact: {
-        name: '',
-        phone: '',
-        relationship: ''
-      },
-      address: '',
-      notes: ''
-    });
-    setShowAddModal(false);
-  };
-
-  const handleEditMember = (member: StaffMember) => {
-    setEditingMember(member);
-  };
-
-  const handleUpdateMember = () => {
-    if (editingMember) {
-      setStaffMembers(staffMembers.map(member => 
-        member.id === editingMember.id ? editingMember : member
-      ));
-      setEditingMember(null);
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'ACTIVE': return 'Active';
+      case 'INACTIVE': return 'Inactive';
+      case 'ON_LEAVE': return 'On Leave';
+      default: return status;
     }
   };
 
-  const handleDeleteMember = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this staff member?')) {
-      setStaffMembers(staffMembers.filter(member => member.id !== id));
-    }
-  };
 
   const getActiveStaffCount = () => {
-    return staffMembers.filter(member => member.status === 'Active').length;
+    return staffMembers.filter(member => member.status === 'ACTIVE').length;
   };
 
   const getTotalSalary = () => {
@@ -224,8 +186,21 @@ const StaffPage: React.FC = () => {
         </button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="stats-grid">
+      {/* Loading and Error States */}
+      {loading ? (
+        <div className="loading-state">
+          <div className="spinner"></div>
+          <p>Loading staff members...</p>
+        </div>
+      ) : error ? (
+        <div className="error-state">
+          <p>{error}</p>
+          <button onClick={loadStaffMembers}>Retry</button>
+        </div>
+      ) : (
+        <>
+          {/* Stats Cards */}
+          <div className="stats-grid">
         <div className="stat-card">
           <div className="stat-icon">
             <User size={24} />
@@ -316,7 +291,7 @@ const StaffPage: React.FC = () => {
                     className="status-badge"
                     style={{ color: getStatusColor(member.status) }}
                   >
-                    {member.status}
+                    {getStatusText(member.status)}
                   </span>
                 </div>
               </div>
@@ -476,9 +451,9 @@ const StaffPage: React.FC = () => {
                     value={newMember.status}
                     onChange={(e) => setNewMember({...newMember, status: e.target.value as any})}
                   >
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                    <option value="On Leave">On Leave</option>
+                    <option value="ACTIVE">Active</option>
+                    <option value="INACTIVE">Inactive</option>
+                    <option value="ON_LEAVE">On Leave</option>
                   </select>
                 </div>
                 <div className="form-group">
@@ -494,10 +469,10 @@ const StaffPage: React.FC = () => {
                   <label>Emergency Contact Name</label>
                   <input
                     type="text"
-                    value={newMember.emergencyContact.name}
+                    value={newMember.emergencyContactName}
                     onChange={(e) => setNewMember({
                       ...newMember, 
-                      emergencyContact: {...newMember.emergencyContact, name: e.target.value}
+                      emergencyContactName: e.target.value
                     })}
                     placeholder="Enter emergency contact name"
                   />
@@ -506,10 +481,10 @@ const StaffPage: React.FC = () => {
                   <label>Emergency Contact Phone</label>
                   <input
                     type="tel"
-                    value={newMember.emergencyContact.phone}
+                    value={newMember.emergencyContactPhone}
                     onChange={(e) => setNewMember({
                       ...newMember, 
-                      emergencyContact: {...newMember.emergencyContact, phone: e.target.value}
+                      emergencyContactPhone: e.target.value
                     })}
                     placeholder="Enter emergency contact phone"
                   />
@@ -518,10 +493,10 @@ const StaffPage: React.FC = () => {
                   <label>Relationship</label>
                   <input
                     type="text"
-                    value={newMember.emergencyContact.relationship}
+                    value={newMember.emergencyContactRelationship}
                     onChange={(e) => setNewMember({
                       ...newMember, 
-                      emergencyContact: {...newMember.emergencyContact, relationship: e.target.value}
+                      emergencyContactRelationship: e.target.value
                     })}
                     placeholder="e.g., Spouse, Parent, Sibling"
                   />
@@ -638,9 +613,9 @@ const StaffPage: React.FC = () => {
                     value={editingMember.status}
                     onChange={(e) => setEditingMember({...editingMember, status: e.target.value as any})}
                   >
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                    <option value="On Leave">On Leave</option>
+                    <option value="ACTIVE">Active</option>
+                    <option value="INACTIVE">Inactive</option>
+                    <option value="ON_LEAVE">On Leave</option>
                   </select>
                 </div>
                 <div className="form-group">
@@ -655,10 +630,10 @@ const StaffPage: React.FC = () => {
                   <label>Emergency Contact Name</label>
                   <input
                     type="text"
-                    value={editingMember.emergencyContact.name}
+                    value={editingMember.emergencyContactName}
                     onChange={(e) => setEditingMember({
                       ...editingMember, 
-                      emergencyContact: {...editingMember.emergencyContact, name: e.target.value}
+                      emergencyContactName: e.target.value
                     })}
                   />
                 </div>
@@ -666,10 +641,10 @@ const StaffPage: React.FC = () => {
                   <label>Emergency Contact Phone</label>
                   <input
                     type="tel"
-                    value={editingMember.emergencyContact.phone}
+                    value={editingMember.emergencyContactPhone}
                     onChange={(e) => setEditingMember({
                       ...editingMember, 
-                      emergencyContact: {...editingMember.emergencyContact, phone: e.target.value}
+                      emergencyContactPhone: e.target.value
                     })}
                   />
                 </div>
@@ -677,10 +652,10 @@ const StaffPage: React.FC = () => {
                   <label>Relationship</label>
                   <input
                     type="text"
-                    value={editingMember.emergencyContact.relationship}
+                    value={editingMember.emergencyContactRelationship}
                     onChange={(e) => setEditingMember({
                       ...editingMember, 
-                      emergencyContact: {...editingMember.emergencyContact, relationship: e.target.value}
+                      emergencyContactRelationship: e.target.value
                     })}
                   />
                 </div>
@@ -703,13 +678,15 @@ const StaffPage: React.FC = () => {
               </button>
               <button 
                 className="save-btn"
-                onClick={handleUpdateMember}
+                onClick={() => handleEditMember(editingMember)}
               >
                 Update Member
               </button>
             </div>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );

@@ -79,6 +79,7 @@
   transition: all 0.3s ease;
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(5px);
+  color: #1a1a1a;
 }
 
 .form-input:focus {
@@ -86,10 +87,28 @@
   border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
   background: rgba(255, 255, 255, 0.95);
+  color: #1a1a1a;
 }
 
 .form-input::placeholder {
   color: #a0aec0;
+}
+
+/* Ensure text is always visible in input fields */
+.form-input[type="text"],
+.form-input[type="email"],
+.form-input[type="password"],
+.form-input[type="tel"] {
+  color: #1a1a1a !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+}
+
+.form-input[type="text"]:focus,
+.form-input[type="email"]:focus,
+.form-input[type="password"]:focus,
+.form-input[type="tel"]:focus {
+  color: #1a1a1a !important;
+  background: rgba(255, 255, 255, 0.95) !important;
 }
 
 .password-error {

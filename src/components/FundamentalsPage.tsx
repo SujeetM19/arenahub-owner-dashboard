@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import { MapPin, Phone, Mail, Clock, Users, Wifi, Car, Dumbbell, Shield, Star } from 'lucide-react';
+import api from '../services/api';
 import './FundamentalsPage.css';
 
 interface GymInfo {
+  id: number;
   name: string;
   address: string;
   phone: string;
@@ -13,35 +15,60 @@ interface GymInfo {
   amenities: string[];
   description: string;
   rating: number;
+  centerId?: number;
+  centerName?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 const FundamentalsPage: React.FC = () => {
   const { theme } = useTheme();
   
   console.log('FundamentalsPage rendered');
-  const [gymInfo, setGymInfo] = useState<GymInfo>({
-    name: 'New Gym',
-    address: '123 Fitness Street, Health City, HC 12345',
-    phone: '+1 (555) 123-4567',
-    email: 'info@newgym.com',
-    hours: 'Monday - Sunday: 5:00 AM - 11:00 PM',
-    capacity: 200,
-    amenities: ['Free WiFi', 'Parking', 'Locker Rooms', 'Shower Facilities', 'Personal Training', 'Group Classes'],
-    description: 'A state-of-the-art fitness facility equipped with modern equipment and professional trainers to help you achieve your fitness goals.',
-    rating: 4.8
-  });
-
+  const [gymInfo, setGymInfo] = useState<GymInfo | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedInfo, setEditedInfo] = useState<GymInfo>(gymInfo);
+  const [editedInfo, setEditedInfo] = useState<GymInfo | null>(null);
 
-  const handleEdit = () => {
-    setIsEditing(true);
-    setEditedInfo(gymInfo);
+  // Load gym info from API
+  useEffect(() => {
+    loadGymInfo();
+  }, []);
+
+  const loadGymInfo = async () => {
+    try {
+      setLoading(true);
+      const response = await api.getCenters();
+      if (response && response.length > 0) {
+        setGymInfo(response[0]); // Use first center for now
+      }
+    } catch (err) {
+      setError('Failed to load gym information');
+      console.error('Error loading gym info:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSave = () => {
-    setGymInfo(editedInfo);
-    setIsEditing(false);
+  const handleEdit = () => {
+    if (gymInfo) {
+      setIsEditing(true);
+      setEditedInfo(gymInfo);
+    }
+  };
+
+  const handleSave = async () => {
+    if (editedInfo) {
+      try {
+        const response = await api.updateCenter(editedInfo.id, editedInfo);
+        setGymInfo(response);
+        setIsEditing(false);
+      } catch (err) {
+        setError('Failed to update gym information');
+        console.error('Error updating gym info:', err);
+      }
+    }
   };
 
   const handleCancel = () => {
@@ -77,7 +104,19 @@ const FundamentalsPage: React.FC = () => {
         <p className="page-subtitle">Manage your gym's basic information and details</p>
       </div>
 
-      <div className="gym-info-content">
+      {/* Loading and Error States */}
+      {loading ? (
+        <div className="loading-state">
+          <div className="spinner"></div>
+          <p>Loading gym information...</p>
+        </div>
+      ) : error ? (
+        <div className="error-state">
+          <p>{error}</p>
+          <button onClick={loadGymInfo}>Retry</button>
+        </div>
+      ) : gymInfo ? (
+        <div className="gym-info-content">
         <div className="gym-info-card">
           <div className="card-header">
             <h2 className="card-title">Basic Information</h2>
@@ -289,6 +328,11 @@ const FundamentalsPage: React.FC = () => {
           </div>
         </div>
       </div>
+        ) : (
+          <div className="empty-state">
+            <p>No gym information found</p>
+          </div>
+        )}
     </div>
   );
 };

@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import { Plus, Search, Filter, Edit, Trash2, User, Star, Calendar, Clock, Award, Users, DollarSign } from 'lucide-react';
+import api from '../services/api';
 import './TrainersPage.css';
 
 interface Trainer {
-  id: string;
+  id: number;
   name: string;
   email: string;
   phone: string;
   specialties: string[];
   certifications: string[];
-  experience: number; // years
+  experienceYears: number; // years
   rating: number;
   hourlyRate: number;
   availability: {
@@ -24,122 +25,22 @@ interface Trainer {
   };
   bio: string;
   profileImage?: string;
-  status: 'Active' | 'Inactive' | 'On Leave';
+  status: 'ACTIVE' | 'INACTIVE' | 'ON_LEAVE';
   joinDate: string;
   totalClients: number;
   totalSessions: number;
   notes?: string;
+  centerId?: number;
+  centerName?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 const TrainersPage: React.FC = () => {
   const { theme } = useTheme();
-  const [trainers, setTrainers] = useState<Trainer[]>([
-    {
-      id: '1',
-      name: 'Sarah Johnson',
-      email: 'sarah.johnson@gym.com',
-      phone: '+1 (555) 234-5678',
-      specialties: ['Strength Training', 'Weight Loss', 'Bodybuilding'],
-      certifications: ['NASM-CPT', 'CSCS', 'Precision Nutrition'],
-      experience: 8,
-      rating: 4.9,
-      hourlyRate: 75,
-      availability: {
-        monday: ['9:00 AM', '2:00 PM', '6:00 PM'],
-        tuesday: ['10:00 AM', '3:00 PM', '7:00 PM'],
-        wednesday: ['9:00 AM', '2:00 PM', '6:00 PM'],
-        thursday: ['10:00 AM', '3:00 PM', '7:00 PM'],
-        friday: ['9:00 AM', '2:00 PM', '5:00 PM'],
-        saturday: ['10:00 AM', '2:00 PM'],
-        sunday: []
-      },
-      bio: 'Certified personal trainer with 8+ years of experience helping clients achieve their fitness goals through strength training and nutrition coaching.',
-      status: 'Active',
-      joinDate: '2023-03-20',
-      totalClients: 25,
-      totalSessions: 1200,
-      notes: 'Specializes in powerlifting and Olympic weightlifting'
-    },
-    {
-      id: '2',
-      name: 'Mike Rodriguez',
-      email: 'mike.rodriguez@gym.com',
-      phone: '+1 (555) 345-6789',
-      specialties: ['Yoga', 'Pilates', 'Flexibility'],
-      certifications: ['RYT-500', 'Pilates Instructor', 'Yin Yoga'],
-      experience: 6,
-      rating: 4.8,
-      hourlyRate: 65,
-      availability: {
-        monday: ['7:00 AM', '12:00 PM', '5:00 PM'],
-        tuesday: ['8:00 AM', '1:00 PM', '6:00 PM'],
-        wednesday: ['7:00 AM', '12:00 PM', '5:00 PM'],
-        thursday: ['8:00 AM', '1:00 PM', '6:00 PM'],
-        friday: ['7:00 AM', '12:00 PM', '4:00 PM'],
-        saturday: ['9:00 AM', '1:00 PM'],
-        sunday: ['10:00 AM', '2:00 PM']
-      },
-      bio: 'Experienced yoga and pilates instructor focused on improving flexibility, balance, and mental well-being through mindful movement.',
-      status: 'Active',
-      joinDate: '2023-06-15',
-      totalClients: 18,
-      totalSessions: 850,
-      notes: 'Great with beginners and rehabilitation'
-    },
-    {
-      id: '3',
-      name: 'Emily Chen',
-      email: 'emily.chen@gym.com',
-      phone: '+1 (555) 456-7890',
-      specialties: ['HIIT', 'Cardio', 'Group Fitness'],
-      certifications: ['ACSM-CPT', 'HIIT Specialist', 'Group Fitness'],
-      experience: 5,
-      rating: 4.7,
-      hourlyRate: 60,
-      availability: {
-        monday: ['6:00 AM', '11:00 AM', '4:00 PM'],
-        tuesday: ['7:00 AM', '12:00 PM', '5:00 PM'],
-        wednesday: ['6:00 AM', '11:00 AM', '4:00 PM'],
-        thursday: ['7:00 AM', '12:00 PM', '5:00 PM'],
-        friday: ['6:00 AM', '11:00 AM', '3:00 PM'],
-        saturday: ['8:00 AM', '12:00 PM'],
-        sunday: []
-      },
-      bio: 'High-energy trainer specializing in HIIT and cardio workouts. Passionate about helping clients build endurance and burn fat effectively.',
-      status: 'On Leave',
-      joinDate: '2023-08-05',
-      totalClients: 22,
-      totalSessions: 950,
-      notes: 'Currently on maternity leave until April 2024'
-    },
-    {
-      id: '4',
-      name: 'David Thompson',
-      email: 'david.thompson@gym.com',
-      phone: '+1 (555) 567-8901',
-      specialties: ['Functional Training', 'Rehabilitation', 'Senior Fitness'],
-      certifications: ['NASM-CES', 'FMS', 'Senior Fitness Specialist'],
-      experience: 10,
-      rating: 4.9,
-      hourlyRate: 80,
-      availability: {
-        monday: ['8:00 AM', '1:00 PM', '6:00 PM'],
-        tuesday: ['9:00 AM', '2:00 PM', '7:00 PM'],
-        wednesday: ['8:00 AM', '1:00 PM', '6:00 PM'],
-        thursday: ['9:00 AM', '2:00 PM', '7:00 PM'],
-        friday: ['8:00 AM', '1:00 PM', '5:00 PM'],
-        saturday: ['9:00 AM', '1:00 PM'],
-        sunday: ['10:00 AM']
-      },
-      bio: 'Senior trainer with extensive experience in functional movement and rehabilitation. Expert in working with clients recovering from injuries.',
-      status: 'Active',
-      joinDate: '2023-01-10',
-      totalClients: 30,
-      totalSessions: 1500,
-      notes: 'Highly recommended for post-injury recovery'
-    }
-  ]);
-
+  const [trainers, setTrainers] = useState<Trainer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSpecialty, setSelectedSpecialty] = useState('All');
   const [selectedStatus, setSelectedStatus] = useState('All');
@@ -151,7 +52,7 @@ const TrainersPage: React.FC = () => {
     phone: '',
     specialties: [],
     certifications: [],
-    experience: 0,
+    experienceYears: 0,
     rating: 0,
     hourlyRate: 0,
     availability: {
@@ -164,7 +65,7 @@ const TrainersPage: React.FC = () => {
       sunday: []
     },
     bio: '',
-    status: 'Active',
+    status: 'ACTIVE',
     joinDate: new Date().toISOString().split('T')[0],
     totalClients: 0,
     totalSessions: 0,
@@ -172,7 +73,88 @@ const TrainersPage: React.FC = () => {
   });
 
   const specialties = ['All', 'Strength Training', 'Weight Loss', 'Bodybuilding', 'Yoga', 'Pilates', 'HIIT', 'Cardio', 'Functional Training', 'Rehabilitation', 'Senior Fitness'];
-  const statuses = ['All', 'Active', 'Inactive', 'On Leave'];
+  const statuses = ['All', 'ACTIVE', 'INACTIVE', 'ON_LEAVE'];
+
+  // Load trainers from API
+  useEffect(() => {
+    loadTrainers();
+  }, []);
+
+  const loadTrainers = async () => {
+    try {
+      setLoading(true);
+      const response = await api.getTrainers();
+      setTrainers(response.content || response);
+    } catch (err) {
+      setError('Failed to load trainers');
+      console.error('Error loading trainers:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddTrainer = async () => {
+    try {
+      const response = await api.createTrainer({
+        ...newTrainer,
+        centerId: 1 // Default center ID, should be dynamic
+      });
+      setTrainers(prev => [response, ...prev]);
+      setShowAddModal(false);
+      setNewTrainer({
+        name: '',
+        email: '',
+        phone: '',
+        specialties: [],
+        certifications: [],
+        experienceYears: 0,
+        rating: 0,
+        hourlyRate: 0,
+        availability: {
+          monday: [],
+          tuesday: [],
+          wednesday: [],
+          thursday: [],
+          friday: [],
+          saturday: [],
+          sunday: []
+        },
+        bio: '',
+        status: 'ACTIVE',
+        joinDate: new Date().toISOString().split('T')[0],
+        totalClients: 0,
+        totalSessions: 0,
+        notes: ''
+      });
+    } catch (err) {
+      setError('Failed to add trainer');
+      console.error('Error adding trainer:', err);
+    }
+  };
+
+  const handleEditTrainer = async (trainer: Trainer) => {
+    try {
+      const response = await api.updateTrainer(trainer.id, {
+        ...trainer,
+        centerId: 1 // Default center ID, should be dynamic
+      });
+      setTrainers(prev => prev.map(t => t.id === trainer.id ? response : t));
+      setEditingTrainer(null);
+    } catch (err) {
+      setError('Failed to update trainer');
+      console.error('Error updating trainer:', err);
+    }
+  };
+
+  const handleDeleteTrainer = async (id: number) => {
+    try {
+      await api.deleteTrainer(id);
+      setTrainers(prev => prev.filter(trainer => trainer.id !== id));
+    } catch (err) {
+      setError('Failed to delete trainer');
+      console.error('Error deleting trainer:', err);
+    }
+  };
 
   const filteredTrainers = trainers.filter(trainer => {
     const matchesSearch = trainer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -185,72 +167,28 @@ const TrainersPage: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Active': return '#22c55e';
-      case 'Inactive': return '#6b7280';
-      case 'On Leave': return '#f59e0b';
+      case 'ACTIVE': return '#22c55e';
+      case 'INACTIVE': return '#6b7280';
+      case 'ON_LEAVE': return '#f59e0b';
       default: return '#6b7280';
     }
   };
 
-  const handleAddTrainer = () => {
-    const trainer: Trainer = {
-      ...newTrainer,
-      id: Date.now().toString()
-    };
-    setTrainers([...trainers, trainer]);
-    setNewTrainer({
-      name: '',
-      email: '',
-      phone: '',
-      specialties: [],
-      certifications: [],
-      experience: 0,
-      rating: 0,
-      hourlyRate: 0,
-      availability: {
-        monday: [],
-        tuesday: [],
-        wednesday: [],
-        thursday: [],
-        friday: [],
-        saturday: [],
-        sunday: []
-      },
-      bio: '',
-      status: 'Active',
-      joinDate: new Date().toISOString().split('T')[0],
-      totalClients: 0,
-      totalSessions: 0,
-      notes: ''
-    });
-    setShowAddModal(false);
-  };
-
-  const handleEditTrainer = (trainer: Trainer) => {
-    setEditingTrainer(trainer);
-  };
-
-  const handleUpdateTrainer = () => {
-    if (editingTrainer) {
-      setTrainers(trainers.map(trainer => 
-        trainer.id === editingTrainer.id ? editingTrainer : trainer
-      ));
-      setEditingTrainer(null);
-    }
-  };
-
-  const handleDeleteTrainer = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this trainer?')) {
-      setTrainers(trainers.filter(trainer => trainer.id !== id));
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'ACTIVE': return 'Active';
+      case 'INACTIVE': return 'Inactive';
+      case 'ON_LEAVE': return 'On Leave';
+      default: return status;
     }
   };
 
   const getActiveTrainersCount = () => {
-    return trainers.filter(trainer => trainer.status === 'Active').length;
+    return trainers.filter(trainer => trainer.status === 'ACTIVE').length;
   };
 
   const getAverageRating = () => {
-    const activeTrainers = trainers.filter(trainer => trainer.status === 'Active');
+    const activeTrainers = trainers.filter(trainer => trainer.status === 'ACTIVE');
     return activeTrainers.length > 0 
       ? activeTrainers.reduce((sum, trainer) => sum + trainer.rating, 0) / activeTrainers.length 
       : 0;
@@ -280,8 +218,21 @@ const TrainersPage: React.FC = () => {
         </button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="stats-grid">
+      {/* Loading and Error States */}
+      {loading ? (
+        <div className="loading-state">
+          <div className="spinner"></div>
+          <p>Loading trainers...</p>
+        </div>
+      ) : error ? (
+        <div className="error-state">
+          <p>{error}</p>
+          <button onClick={loadTrainers}>Retry</button>
+        </div>
+      ) : (
+        <>
+          {/* Stats Cards */}
+          <div className="stats-grid">
         <div className="stat-card">
           <div className="stat-icon">
             <Users size={24} />
@@ -369,7 +320,7 @@ const TrainersPage: React.FC = () => {
                 </div>
                 <div className="trainer-info">
                   <h3 className="trainer-name">{trainer.name}</h3>
-                  <p className="trainer-experience">{trainer.experience} years experience</p>
+                  <p className="trainer-experience">{trainer.experienceYears} years experience</p>
                 </div>
                 <div className="trainer-rating">
                   <Star size={16} className="star-icon" />
@@ -411,7 +362,7 @@ const TrainersPage: React.FC = () => {
                       className="status-badge"
                       style={{ color: getStatusColor(trainer.status) }}
                     >
-                      {trainer.status}
+                      {getStatusText(trainer.status)}
                     </span>
                   </div>
                   
@@ -509,8 +460,8 @@ const TrainersPage: React.FC = () => {
                   <label>Experience (years)</label>
                   <input
                     type="number"
-                    value={newTrainer.experience}
-                    onChange={(e) => setNewTrainer({...newTrainer, experience: parseInt(e.target.value) || 0})}
+                    value={newTrainer.experienceYears}
+                    onChange={(e) => setNewTrainer({...newTrainer, experienceYears: parseInt(e.target.value) || 0})}
                     placeholder="Enter years of experience"
                   />
                 </div>
@@ -541,9 +492,9 @@ const TrainersPage: React.FC = () => {
                     value={newTrainer.status}
                     onChange={(e) => setNewTrainer({...newTrainer, status: e.target.value as any})}
                   >
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                    <option value="On Leave">On Leave</option>
+                    <option value="ACTIVE">Active</option>
+                    <option value="INACTIVE">Inactive</option>
+                    <option value="ON_LEAVE">On Leave</option>
                   </select>
                 </div>
                 <div className="form-group">
@@ -635,8 +586,8 @@ const TrainersPage: React.FC = () => {
                   <label>Experience (years)</label>
                   <input
                     type="number"
-                    value={editingTrainer.experience}
-                    onChange={(e) => setEditingTrainer({...editingTrainer, experience: parseInt(e.target.value) || 0})}
+                    value={editingTrainer.experienceYears}
+                    onChange={(e) => setEditingTrainer({...editingTrainer, experienceYears: parseInt(e.target.value) || 0})}
                   />
                 </div>
                 <div className="form-group">
@@ -664,9 +615,9 @@ const TrainersPage: React.FC = () => {
                     value={editingTrainer.status}
                     onChange={(e) => setEditingTrainer({...editingTrainer, status: e.target.value as any})}
                   >
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                    <option value="On Leave">On Leave</option>
+                    <option value="ACTIVE">Active</option>
+                    <option value="INACTIVE">Inactive</option>
+                    <option value="ON_LEAVE">On Leave</option>
                   </select>
                 </div>
                 <div className="form-group">
@@ -704,13 +655,15 @@ const TrainersPage: React.FC = () => {
               </button>
               <button 
                 className="save-btn"
-                onClick={handleUpdateTrainer}
+                onClick={() => handleEditTrainer(editingTrainer)}
               >
                 Update Trainer
               </button>
             </div>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );

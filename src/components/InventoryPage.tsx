@@ -1,103 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import { Plus, Search, Filter, Edit, Trash2, Package, AlertTriangle, CheckCircle, TrendingUp, TrendingDown } from 'lucide-react';
+import api from '../services/api';
 import './InventoryPage.css';
 
 interface InventoryItem {
-  id: string;
+  id: number;
   name: string;
   category: string;
   quantity: number;
   minQuantity: number;
   maxQuantity: number;
   unit: string;
-  cost: number;
+  costPerUnit: number;
   supplier: string;
   lastRestocked: string;
-  status: 'In Stock' | 'Low Stock' | 'Out of Stock';
+  status: 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK';
   location: string;
   description?: string;
+  centerId?: number;
+  centerName?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 const InventoryPage: React.FC = () => {
   const { theme } = useTheme();
-  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([
-    {
-      id: '1',
-      name: 'Protein Powder',
-      category: 'Supplements',
-      quantity: 25,
-      minQuantity: 10,
-      maxQuantity: 50,
-      unit: 'kg',
-      cost: 45.99,
-      supplier: 'Nutrition Plus',
-      lastRestocked: '2024-01-15',
-      status: 'In Stock',
-      location: 'Storage Room A',
-      description: 'Whey protein isolate'
-    },
-    {
-      id: '2',
-      name: 'Towel Set',
-      category: 'Amenities',
-      quantity: 3,
-      minQuantity: 20,
-      maxQuantity: 100,
-      unit: 'sets',
-      cost: 12.50,
-      supplier: 'Clean Supplies Co',
-      lastRestocked: '2024-01-10',
-      status: 'Low Stock',
-      location: 'Locker Room',
-      description: 'White cotton towels'
-    },
-    {
-      id: '3',
-      name: 'Dumbbells 20kg',
-      category: 'Equipment',
-      quantity: 0,
-      minQuantity: 4,
-      maxQuantity: 8,
-      unit: 'pairs',
-      cost: 89.99,
-      supplier: 'Fitness Equipment Ltd',
-      lastRestocked: '2024-01-05',
-      status: 'Out of Stock',
-      location: 'Weight Room',
-      description: 'Rubber coated dumbbells'
-    },
-    {
-      id: '4',
-      name: 'Cleaning Spray',
-      category: 'Maintenance',
-      quantity: 15,
-      minQuantity: 5,
-      maxQuantity: 30,
-      unit: 'bottles',
-      cost: 8.99,
-      supplier: 'Clean Supplies Co',
-      lastRestocked: '2024-01-12',
-      status: 'In Stock',
-      location: 'Storage Room B',
-      description: 'Antibacterial cleaning spray'
-    },
-    {
-      id: '5',
-      name: 'Water Bottles',
-      category: 'Amenities',
-      quantity: 8,
-      minQuantity: 15,
-      maxQuantity: 50,
-      unit: 'pieces',
-      cost: 3.99,
-      supplier: 'Hydration Solutions',
-      lastRestocked: '2024-01-08',
-      status: 'Low Stock',
-      location: 'Reception',
-      description: 'Reusable water bottles'
-    }
-  ]);
+  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -111,16 +42,86 @@ const InventoryPage: React.FC = () => {
     minQuantity: 0,
     maxQuantity: 0,
     unit: '',
-    cost: 0,
+    costPerUnit: 0,
     supplier: '',
     lastRestocked: new Date().toISOString().split('T')[0],
-    status: 'In Stock',
+    status: 'IN_STOCK',
     location: '',
     description: ''
   });
 
-  const categories = ['All', 'Equipment', 'Supplements', 'Amenities', 'Maintenance', 'Safety'];
-  const statuses = ['All', 'In Stock', 'Low Stock', 'Out of Stock'];
+  const categories = ['All', 'EQUIPMENT', 'SUPPLEMENTS', 'AMENITIES', 'MAINTENANCE', 'SAFETY', 'CLEANING'];
+  const statuses = ['All', 'IN_STOCK', 'LOW_STOCK', 'OUT_OF_STOCK'];
+
+  // Load inventory items from API
+  useEffect(() => {
+    loadInventoryItems();
+  }, []);
+
+  const loadInventoryItems = async () => {
+    try {
+      setLoading(true);
+      const response = await api.getInventoryItems();
+      setInventoryItems(response.content || response);
+    } catch (err) {
+      setError('Failed to load inventory items');
+      console.error('Error loading inventory items:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddItem = async () => {
+    try {
+      const response = await api.createInventoryItem({
+        ...newItem,
+        centerId: 1 // Default center ID, should be dynamic
+      });
+      setInventoryItems(prev => [response, ...prev]);
+      setShowAddModal(false);
+      setNewItem({
+        name: '',
+        category: '',
+        quantity: 0,
+        minQuantity: 0,
+        maxQuantity: 0,
+        unit: '',
+        costPerUnit: 0,
+        supplier: '',
+        lastRestocked: new Date().toISOString().split('T')[0],
+        status: 'IN_STOCK',
+        location: '',
+        description: ''
+      });
+    } catch (err) {
+      setError('Failed to add inventory item');
+      console.error('Error adding inventory item:', err);
+    }
+  };
+
+  const handleEditItem = async (item: InventoryItem) => {
+    try {
+      const response = await api.updateInventoryItem(item.id, {
+        ...item,
+        centerId: 1 // Default center ID, should be dynamic
+      });
+      setInventoryItems(prev => prev.map(i => i.id === item.id ? response : i));
+      setEditingItem(null);
+    } catch (err) {
+      setError('Failed to update inventory item');
+      console.error('Error updating inventory item:', err);
+    }
+  };
+
+  const handleDeleteItem = async (id: number) => {
+    try {
+      await api.deleteInventoryItem(id);
+      setInventoryItems(prev => prev.filter(item => item.id !== id));
+    } catch (err) {
+      setError('Failed to delete inventory item');
+      console.error('Error deleting inventory item:', err);
+    }
+  };
 
   const filteredItems = inventoryItems.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -133,70 +134,38 @@ const InventoryPage: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'In Stock': return '#22c55e';
-      case 'Low Stock': return '#f59e0b';
-      case 'Out of Stock': return '#ef4444';
+      case 'IN_STOCK': return '#22c55e';
+      case 'LOW_STOCK': return '#f59e0b';
+      case 'OUT_OF_STOCK': return '#ef4444';
       default: return '#6b7280';
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'In Stock': return <CheckCircle size={16} />;
-      case 'Low Stock': return <AlertTriangle size={16} />;
-      case 'Out of Stock': return <AlertTriangle size={16} />;
+      case 'IN_STOCK': return <CheckCircle size={16} />;
+      case 'LOW_STOCK': return <AlertTriangle size={16} />;
+      case 'OUT_OF_STOCK': return <AlertTriangle size={16} />;
       default: return <Package size={16} />;
     }
   };
 
-  const handleAddItem = () => {
-    const item: InventoryItem = {
-      ...newItem,
-      id: Date.now().toString()
-    };
-    setInventoryItems([...inventoryItems, item]);
-    setNewItem({
-      name: '',
-      category: '',
-      quantity: 0,
-      minQuantity: 0,
-      maxQuantity: 0,
-      unit: '',
-      cost: 0,
-      supplier: '',
-      lastRestocked: new Date().toISOString().split('T')[0],
-      status: 'In Stock',
-      location: '',
-      description: ''
-    });
-    setShowAddModal(false);
-  };
-
-  const handleEditItem = (item: InventoryItem) => {
-    setEditingItem(item);
-  };
-
-  const handleUpdateItem = () => {
-    if (editingItem) {
-      setInventoryItems(inventoryItems.map(item => 
-        item.id === editingItem.id ? editingItem : item
-      ));
-      setEditingItem(null);
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'IN_STOCK': return 'In Stock';
+      case 'LOW_STOCK': return 'Low Stock';
+      case 'OUT_OF_STOCK': return 'Out of Stock';
+      default: return status;
     }
   };
 
-  const handleDeleteItem = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this item?')) {
-      setInventoryItems(inventoryItems.filter(item => item.id !== id));
-    }
-  };
 
   const getLowStockItems = () => {
-    return inventoryItems.filter(item => item.status === 'Low Stock' || item.status === 'Out of Stock');
+    return inventoryItems.filter(item => item.status === 'LOW_STOCK' || item.status === 'OUT_OF_STOCK');
   };
 
   const getTotalValue = () => {
-    return inventoryItems.reduce((total, item) => total + (item.quantity * item.cost), 0);
+    return inventoryItems.reduce((total, item) => total + (item.quantity * item.costPerUnit), 0);
   };
 
   const getTotalItems = () => {
@@ -219,8 +188,21 @@ const InventoryPage: React.FC = () => {
         </button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="stats-grid">
+      {/* Loading and Error States */}
+      {loading ? (
+        <div className="loading-state">
+          <div className="spinner"></div>
+          <p>Loading inventory items...</p>
+        </div>
+      ) : error ? (
+        <div className="error-state">
+          <p>{error}</p>
+          <button onClick={loadInventoryItems}>Retry</button>
+        </div>
+      ) : (
+        <>
+          {/* Stats Cards */}
+          <div className="stats-grid">
         <div className="stat-card">
           <div className="stat-icon">
             <Package size={24} />
@@ -253,7 +235,7 @@ const InventoryPage: React.FC = () => {
             <CheckCircle size={24} />
           </div>
           <div className="stat-content">
-            <h3>{inventoryItems.filter(item => item.status === 'In Stock').length}</h3>
+            <h3>{inventoryItems.filter(item => item.status === 'IN_STOCK').length}</h3>
             <p>In Stock Items</p>
           </div>
         </div>
@@ -350,11 +332,11 @@ const InventoryPage: React.FC = () => {
                       style={{ color: getStatusColor(item.status) }}
                     >
                       {getStatusIcon(item.status)}
-                      <span>{item.status}</span>
+                      <span>{getStatusText(item.status)}</span>
                     </div>
                   </td>
                   <td>
-                    <span className="cost">${item.cost.toFixed(2)}</span>
+                    <span className="cost">${item.costPerUnit.toFixed(2)}</span>
                   </td>
                   <td>
                     <span className="supplier">{item.supplier}</span>
@@ -462,8 +444,8 @@ const InventoryPage: React.FC = () => {
                   <input
                     type="number"
                     step="0.01"
-                    value={newItem.cost}
-                    onChange={(e) => setNewItem({...newItem, cost: parseFloat(e.target.value) || 0})}
+                    value={newItem.costPerUnit}
+                    onChange={(e) => setNewItem({...newItem, costPerUnit: parseFloat(e.target.value) || 0})}
                   />
                 </div>
                 <div className="form-group">
@@ -592,8 +574,8 @@ const InventoryPage: React.FC = () => {
                   <input
                     type="number"
                     step="0.01"
-                    value={editingItem.cost}
-                    onChange={(e) => setEditingItem({...editingItem, cost: parseFloat(e.target.value) || 0})}
+                    value={editingItem.costPerUnit}
+                    onChange={(e) => setEditingItem({...editingItem, costPerUnit: parseFloat(e.target.value) || 0})}
                   />
                 </div>
                 <div className="form-group">
@@ -626,9 +608,9 @@ const InventoryPage: React.FC = () => {
                     value={editingItem.status}
                     onChange={(e) => setEditingItem({...editingItem, status: e.target.value as any})}
                   >
-                    <option value="In Stock">In Stock</option>
-                    <option value="Low Stock">Low Stock</option>
-                    <option value="Out of Stock">Out of Stock</option>
+                    <option value="IN_STOCK">In Stock</option>
+                    <option value="LOW_STOCK">Low Stock</option>
+                    <option value="OUT_OF_STOCK">Out of Stock</option>
                   </select>
                 </div>
                 <div className="form-group full-width">
@@ -650,13 +632,15 @@ const InventoryPage: React.FC = () => {
               </button>
               <button 
                 className="save-btn"
-                onClick={handleUpdateItem}
+                onClick={() => handleEditItem(editingItem)}
               >
                 Update Item
               </button>
             </div>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );

@@ -1,85 +1,85 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import { Plus, Upload, Image as ImageIcon, Trash2, Edit, Eye, Download, Search, Filter } from 'lucide-react';
+import api from '../services/api';
 import './GalleryPage.css';
 
 interface GalleryItem {
-  id: string;
+  id: number;
   name: string;
-  url: string;
+  fileUrl: string;
   category: string;
-  uploadDate: string;
-  size: string;
+  createdAt: string;
+  fileSize: number;
   description?: string;
+  fileType?: string;
+  uploadedBy?: string;
+  centerId?: number;
+  centerName?: string;
 }
 
 const GalleryPage: React.FC = () => {
   const { theme } = useTheme();
-  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([
-    {
-      id: '1',
-      name: 'Gym Entrance',
-      url: '/api/placeholder/400/300',
-      category: 'Facility',
-      uploadDate: '2024-01-15',
-      size: '2.3 MB',
-      description: 'Main entrance of the gym'
-    },
-    {
-      id: '2',
-      name: 'Weight Room',
-      url: '/api/placeholder/400/300',
-      category: 'Equipment',
-      uploadDate: '2024-01-14',
-      size: '1.8 MB',
-      description: 'Main weight training area'
-    },
-    {
-      id: '3',
-      name: 'Cardio Section',
-      url: '/api/placeholder/400/300',
-      category: 'Equipment',
-      uploadDate: '2024-01-13',
-      size: '2.1 MB',
-      description: 'Cardio equipment area'
-    },
-    {
-      id: '4',
-      name: 'Group Class',
-      url: '/api/placeholder/400/300',
-      category: 'Classes',
-      uploadDate: '2024-01-12',
-      size: '3.2 MB',
-      description: 'Yoga class in progress'
-    },
-    {
-      id: '5',
-      name: 'Locker Room',
-      url: '/api/placeholder/400/300',
-      category: 'Facility',
-      uploadDate: '2024-01-11',
-      size: '1.9 MB',
-      description: 'Clean and modern locker room'
-    },
-    {
-      id: '6',
-      name: 'Personal Training',
-      url: '/api/placeholder/400/300',
-      category: 'Services',
-      uploadDate: '2024-01-10',
-      size: '2.5 MB',
-      description: 'One-on-one training session'
-    }
-  ]);
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  const categories = ['All', 'Facility', 'Equipment', 'Classes', 'Services', 'Events'];
+  const categories = ['All', 'FACILITY', 'EQUIPMENT', 'CLASSES', 'SERVICES', 'EVENTS', 'AMENITIES'];
+
+  // Load gallery items from API
+  useEffect(() => {
+    loadGalleryItems();
+  }, []);
+
+  const loadGalleryItems = async () => {
+    try {
+      setLoading(true);
+      const response = await api.getGalleryItems();
+      setGalleryItems(response.content || response);
+    } catch (err) {
+      setError('Failed to load gallery items');
+      console.error('Error loading gallery items:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteItem = async (id: number) => {
+    try {
+      await api.deleteGalleryItem(id);
+      setGalleryItems(prev => prev.filter(item => item.id !== id));
+    } catch (err) {
+      setError('Failed to delete item');
+      console.error('Error deleting item:', err);
+    }
+  };
+
+  const handleDeleteItems = async () => {
+    if (window.confirm(`Are you sure you want to delete ${selectedItems.length} item(s)?`)) {
+      try {
+        await api.deleteGalleryItems(selectedItems);
+        setGalleryItems(prev => prev.filter(item => !selectedItems.includes(item.id)));
+        setSelectedItems([]);
+      } catch (err) {
+        setError('Failed to delete items');
+        console.error('Error deleting items:', err);
+      }
+    }
+  };
+
+  const handleUpload = async (files: FileList) => {
+    // This would need to be implemented with file upload logic
+    console.log('Upload files:', files);
+    // For now, just close the modal
+    setShowUploadModal(false);
+  };
 
   const filteredItems = galleryItems.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -88,7 +88,7 @@ const GalleryPage: React.FC = () => {
     return matchesSearch && matchesCategory;
   });
 
-  const handleSelectItem = (itemId: string) => {
+  const handleSelectItem = (itemId: number) => {
     setSelectedItems(prev => 
       prev.includes(itemId) 
         ? prev.filter(id => id !== itemId)
@@ -104,29 +104,6 @@ const GalleryPage: React.FC = () => {
     );
   };
 
-  const handleDeleteItems = () => {
-    if (window.confirm(`Are you sure you want to delete ${selectedItems.length} item(s)?`)) {
-      setGalleryItems(prev => prev.filter(item => !selectedItems.includes(item.id)));
-      setSelectedItems([]);
-    }
-  };
-
-  const handleUpload = (files: FileList) => {
-    // Simulate file upload
-    Array.from(files).forEach((file, index) => {
-      const newItem: GalleryItem = {
-        id: Date.now().toString() + index,
-        name: file.name.split('.')[0],
-        url: URL.createObjectURL(file),
-        category: 'Facility',
-        uploadDate: new Date().toISOString().split('T')[0],
-        size: (file.size / 1024 / 1024).toFixed(1) + ' MB',
-        description: ''
-      };
-      setGalleryItems(prev => [newItem, ...prev]);
-    });
-    setShowUploadModal(false);
-  };
 
   const handleViewItem = (item: GalleryItem) => {
     setSelectedItem(item);
@@ -211,7 +188,17 @@ const GalleryPage: React.FC = () => {
       </div>
 
       <div className="gallery-content">
-        {filteredItems.length === 0 ? (
+        {loading ? (
+          <div className="loading-state">
+            <div className="spinner"></div>
+            <p>Loading gallery items...</p>
+          </div>
+        ) : error ? (
+          <div className="error-state">
+            <p>{error}</p>
+            <button onClick={loadGalleryItems}>Retry</button>
+          </div>
+        ) : filteredItems.length === 0 ? (
           <div className="empty-state">
             <ImageIcon size={64} />
             <h3>No images found</h3>
@@ -238,7 +225,7 @@ const GalleryPage: React.FC = () => {
                       />
                     </div>
                     <div className="item-image" onClick={() => handleViewItem(item)}>
-                      <img src={item.url} alt={item.name} />
+                      <img src={item.fileUrl} alt={item.name} />
                       <div className="image-overlay">
                         <button className="view-btn">
                           <Eye size={20} />
@@ -248,7 +235,7 @@ const GalleryPage: React.FC = () => {
                     <div className="item-info">
                       <h4 className="item-name">{item.name}</h4>
                       <p className="item-category">{item.category}</p>
-                      <p className="item-date">{item.uploadDate}</p>
+                      <p className="item-date">{new Date(item.createdAt).toLocaleDateString()}</p>
                     </div>
                     <div className="item-actions">
                       <button 
@@ -259,7 +246,7 @@ const GalleryPage: React.FC = () => {
                       </button>
                       <button 
                         className="action-btn delete"
-                        onClick={() => handleDeleteItems()}
+                        onClick={() => handleDeleteItem(item.id)}
                       >
                         <Trash2 size={16} />
                       </button>
@@ -297,12 +284,12 @@ const GalleryPage: React.FC = () => {
                       />
                     </div>
                     <div className="item-image">
-                      <img src={item.url} alt={item.name} />
+                      <img src={item.fileUrl} alt={item.name} />
                     </div>
                     <div className="item-name">{item.name}</div>
                     <div className="item-category">{item.category}</div>
-                    <div className="item-date">{item.uploadDate}</div>
-                    <div className="item-size">{item.size}</div>
+                    <div className="item-date">{new Date(item.createdAt).toLocaleDateString()}</div>
+                    <div className="item-size">{(item.fileSize / 1024 / 1024).toFixed(1)} MB</div>
                     <div className="item-actions">
                       <button 
                         className="action-btn view"
@@ -380,13 +367,13 @@ const GalleryPage: React.FC = () => {
             </div>
             <div className="modal-content">
               <div className="image-container">
-                <img src={selectedItem.url} alt={selectedItem.name} />
+                <img src={selectedItem.fileUrl} alt={selectedItem.name} />
               </div>
               <div className="image-details">
                 <h3>{selectedItem.name}</h3>
                 <p><strong>Category:</strong> {selectedItem.category}</p>
-                <p><strong>Upload Date:</strong> {selectedItem.uploadDate}</p>
-                <p><strong>Size:</strong> {selectedItem.size}</p>
+                <p><strong>Upload Date:</strong> {new Date(selectedItem.createdAt).toLocaleDateString()}</p>
+                <p><strong>Size:</strong> {(selectedItem.fileSize / 1024 / 1024).toFixed(1)} MB</p>
                 {selectedItem.description && (
                   <p><strong>Description:</strong> {selectedItem.description}</p>
                 )}
@@ -397,7 +384,7 @@ const GalleryPage: React.FC = () => {
                 className="download-btn"
                 onClick={() => {
                   const link = document.createElement('a');
-                  link.href = selectedItem.url;
+                  link.href = selectedItem.fileUrl;
                   link.download = selectedItem.name;
                   link.click();
                 }}
