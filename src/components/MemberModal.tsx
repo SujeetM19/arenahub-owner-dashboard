@@ -7,13 +7,13 @@ interface Member {
   id: number;
   name: string;
   email: string;
-  phone: string;
+  contactNumber: string;
   membershipPlan: string;
   joinDate: string;
   status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'EXPIRED';
   lastVisit: string | null;
   totalVisits: number;
-  profileImageUrl?: string;
+  profilePic?: string;
   endDate?: string;
 }
 
@@ -44,10 +44,13 @@ const MemberModal: React.FC<MemberModalProps> = ({ member, onClose, onSave, titl
   const [formData, setFormData] = useState({
     name: member?.name || '',
     email: member?.email || '',
-    phone: member?.phone || '',
+    contactNumber: member?.contactNumber || '',
     membershipPlan: member?.membershipPlan || '',
     status: member?.status || 'ACTIVE',
+    profileImageUrl: member?.profilePic || '',
   });
+  const [profileImage, setProfileImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [membershipPlans, setMembershipPlans] = useState<MembershipPlan[]>([]);
   const [isLoadingPlans, setIsLoadingPlans] = useState(false);
 
@@ -56,10 +59,15 @@ const MemberModal: React.FC<MemberModalProps> = ({ member, onClose, onSave, titl
       setFormData({
         name: member.name,
         email: member.email,
-        phone: member.phone,
+        contactNumber: member.contactNumber,
         membershipPlan: member.membershipPlan,
         status: member.status,
+        profileImageUrl: member.profilePic || '',
       });
+      // Set image preview if member has existing profile image
+      if (member.profilePic) {
+        setImagePreview(member.profilePic);
+      }
     }
   }, [member]);
 
@@ -89,26 +97,66 @@ const MemberModal: React.FC<MemberModalProps> = ({ member, onClose, onSave, titl
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const memberData: Member = {
-      id: member?.id || 0,
-      name: formData.name,
-      email: formData.email,
-      phone: formData.phone,
-      membershipPlan: formData.membershipPlan,
-      status: formData.status as 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'EXPIRED',
-      joinDate: member?.joinDate || new Date().toISOString().split('T')[0],
-      lastVisit: member?.lastVisit || null,
-      totalVisits: member?.totalVisits || 0,
-      endDate: member?.endDate,
-    };
     
-    try {
-      await onSave(memberData);
-    } catch (error: any) {
-      if (error.message && error.message.includes('No gym found')) {
-        alert('Please create a gym first before adding members. Go to the Gym Settings page to create your gym.');
-      } else {
-        alert('Error creating member: ' + (error.message || 'Unknown error'));
+    // Handle image upload if a new image is selected
+    let profileImageUrl = formData.profileImageUrl;
+    if (profileImage) {
+      // For now, we'll convert the image to a data URL
+      // In a real application, you'd upload to a cloud service or server
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const dataUrl = e.target?.result as string;
+        profileImageUrl = dataUrl;
+        
+        const memberData: Member = {
+          id: member?.id || 0,
+          name: formData.name,
+          email: formData.email,
+          contactNumber: formData.contactNumber,
+          membershipPlan: formData.membershipPlan,
+          status: formData.status as 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'EXPIRED',
+          joinDate: member?.joinDate || new Date().toISOString().split('T')[0],
+          lastVisit: member?.lastVisit || null,
+          totalVisits: member?.totalVisits || 0,
+          endDate: member?.endDate,
+          profileImageUrl: profileImageUrl,
+        };
+        
+        try {
+          await onSave(memberData);
+        } catch (error: any) {
+          if (error.message && error.message.includes('No gym found')) {
+            alert('Please create a gym first before adding members. Go to the Gym Settings page to create your gym.');
+          } else {
+            alert('Error creating member: ' + (error.message || 'Unknown error'));
+          }
+        }
+      };
+      reader.readAsDataURL(profileImage);
+    } else {
+      // No new image, use existing or empty
+      const memberData: Member = {
+        id: member?.id || 0,
+        name: formData.name,
+        email: formData.email,
+        contactNumber: formData.contactNumber,
+        membershipPlan: formData.membershipPlan,
+        status: formData.status as 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'EXPIRED',
+        joinDate: member?.joinDate || new Date().toISOString().split('T')[0],
+        lastVisit: member?.lastVisit || null,
+        totalVisits: member?.totalVisits || 0,
+        endDate: member?.endDate,
+        profileImageUrl: profileImageUrl,
+      };
+      
+      try {
+        await onSave(memberData);
+      } catch (error: any) {
+        if (error.message && error.message.includes('No gym found')) {
+          alert('Please create a gym first before adding members. Go to the Gym Settings page to create your gym.');
+        } else {
+          alert('Error creating member: ' + (error.message || 'Unknown error'));
+        }
       }
     }
   };
@@ -119,6 +167,42 @@ const MemberModal: React.FC<MemberModalProps> = ({ member, onClose, onSave, titl
       ...prev,
       [name]: value,
     }));
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        alert('Please select a valid image file');
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image size should be less than 5MB');
+        return;
+      }
+      
+      setProfileImage(file);
+      
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setProfileImage(null);
+    setImagePreview(null);
+    // Reset file input
+    const fileInput = document.getElementById('profileImage') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
   };
 
   return (
@@ -157,14 +241,60 @@ const MemberModal: React.FC<MemberModalProps> = ({ member, onClose, onSave, titl
           </div>
           
           <div className="form-group">
-            <label htmlFor="phone">Phone</label>
+            <label htmlFor="contactNumber">Contact Number</label>
             <input
               type="tel"
-              id="phone"
-              name="phone"
-              value={formData.phone}
+              id="contactNumber"
+              name="contactNumber"
+              value={formData.contactNumber}
               onChange={handleChange}
             />
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="profileImage">Profile Picture</label>
+            <div className="image-upload-container">
+              <input
+                type="file"
+                id="profileImage"
+                name="profileImage"
+                accept="image/*"
+                onChange={handleImageUpload}
+                style={{ display: 'none' }}
+              />
+              <div className="image-upload-area">
+                {imagePreview ? (
+                  <div className="image-preview">
+                    <img src={imagePreview} alt="Profile preview" />
+                    <div className="image-actions">
+                      <button
+                        type="button"
+                        onClick={() => document.getElementById('profileImage')?.click()}
+                        className="change-image-btn"
+                      >
+                        Change Image
+                      </button>
+                      <button
+                        type="button"
+                        onClick={removeImage}
+                        className="remove-image-btn"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div 
+                    className="upload-placeholder"
+                    onClick={() => document.getElementById('profileImage')?.click()}
+                  >
+                    <div className="upload-icon">📷</div>
+                    <div className="upload-text">Click to upload profile picture</div>
+                    <div className="upload-hint">Max 5MB, JPG/PNG/GIF</div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
           
           <div className="form-group">
@@ -230,3 +360,4 @@ const MemberModal: React.FC<MemberModalProps> = ({ member, onClose, onSave, titl
 };
 
 export default MemberModal;
+

@@ -11,13 +11,13 @@ interface Member {
   id: number;
   name: string;
   email: string;
-  phone: string;
+  contactNumber: string;
   membershipPlan: string;
   joinDate: string;
   status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'EXPIRED';
   lastVisit: string | null;
   totalVisits: number;
-  profileImageUrl?: string;
+  profilePic?: string;
   endDate?: string;
 }
 
@@ -343,18 +343,33 @@ const MembersPage: React.FC = () => {
                 <td>
                   <div className="member-info">
                     <div className="member-avatar">
-                      {member.name.charAt(0).toUpperCase()}
+                      {member.profilePic ? (
+                        <img 
+                          src={member.profilePic} 
+                          alt={member.name}
+                          className="profile-image"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                            if (nextElement) {
+                              nextElement.style.display = 'flex';
+                            }
+                          }}
+                        />
+                      ) : null}
+                      <div className="avatar-fallback" style={{ display: member.profilePic ? 'none' : 'flex' }}>
+                        {member.name.charAt(0).toUpperCase()}
+                      </div>
                     </div>
                     <div className="member-details">
                       <div className="member-name">{member.name}</div>
-                      <div className="member-id">ID: {member.id}</div>
                     </div>
                   </div>
                 </td>
                 <td>
                   <div className="contact-info">
                     <div className="contact-email">{member.email}</div>
-                    <div className="contact-phone">{member.phone}</div>
+                    <div className="contact-phone">{member.contactNumber}</div>
                   </div>
                 </td>
                 <td>
