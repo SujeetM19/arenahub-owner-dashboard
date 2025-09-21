@@ -247,14 +247,14 @@
   z-index: 10;
 }
 
-.members-table th:nth-child(1) { width: 20%; } /* Member */
-.members-table th:nth-child(2) { width: 20%; } /* Contact */
-.members-table th:nth-child(3) { width: 12%; } /* Membership */
+.members-table th:nth-child(1) { width: 18%; } /* Member */
+.members-table th:nth-child(2) { width: 18%; } /* Contact */
+.members-table th:nth-child(3) { width: 15%; } /* Membership Plan */
 .members-table th:nth-child(4) { width: 10%; } /* Status */
-.members-table th:nth-child(5) { width: 12%; } /* Join Date */
-.members-table th:nth-child(6) { width: 12%; } /* Last Visit */
-.members-table th:nth-child(7) { width: 8%; }  /* Visits */
-.members-table th:nth-child(8) { width: 6%; }  /* Actions */
+.members-table th:nth-child(5) { width: 10%; } /* Join Date */
+.members-table th:nth-child(6) { width: 10%; } /* End Date */
+.members-table th:nth-child(7) { width: 10%; } /* Last Visit */
+.members-table th:nth-child(8) { width: 9%; }  /* Actions */
 
 .members-table td {
   padding: 10px 16px;

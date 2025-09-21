@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
+import api from '../services/api';
 import './MemberModal.css';
 
 interface Member {
@@ -7,12 +8,28 @@ interface Member {
   name: string;
   email: string;
   phone: string;
-  membershipType: string;
+  membershipPlan: string;
   joinDate: string;
-  status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
+  status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'EXPIRED';
   lastVisit: string | null;
   totalVisits: number;
   profileImageUrl?: string;
+  endDate?: string;
+}
+
+interface MembershipPlan {
+  id: number;
+  planName: string;
+  planCurrentPrice: number;
+  planNormalPrice: number;
+  planMaxPrice: number;
+  durationMonths: number;
+  facilities: string;
+  isTrainerIncluded: boolean;
+  isDietPlanIncluded: boolean;
+  isLowestActive: boolean;
+  dateFrom: string;
+  dateUpto?: string;
 }
 
 interface MemberModalProps {
@@ -28,9 +45,11 @@ const MemberModal: React.FC<MemberModalProps> = ({ member, onClose, onSave, titl
     name: member?.name || '',
     email: member?.email || '',
     phone: member?.phone || '',
-    membershipType: member?.membershipType || 'BASIC',
+    membershipPlan: member?.membershipPlan || '',
     status: member?.status || 'ACTIVE',
   });
+  const [membershipPlans, setMembershipPlans] = useState<MembershipPlan[]>([]);
+  const [isLoadingPlans, setIsLoadingPlans] = useState(false);
 
   useEffect(() => {
     if (member) {
@@ -38,26 +57,60 @@ const MemberModal: React.FC<MemberModalProps> = ({ member, onClose, onSave, titl
         name: member.name,
         email: member.email,
         phone: member.phone,
-        membershipType: member.membershipType,
+        membershipPlan: member.membershipPlan,
         status: member.status,
       });
     }
   }, [member]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    fetchMembershipPlans();
+  }, []);
+
+  const fetchMembershipPlans = async () => {
+    try {
+      setIsLoadingPlans(true);
+      const plans = await api.getMembershipPlans();
+      // Ensure plans is an array before setting it
+      if (Array.isArray(plans)) {
+        setMembershipPlans(plans);
+      } else {
+        console.error('Invalid membership plans response:', plans);
+        setMembershipPlans([]);
+      }
+    } catch (error) {
+      console.error('Error fetching membership plans:', error);
+      // Set empty array on error - user will see the help message
+      setMembershipPlans([]);
+    } finally {
+      setIsLoadingPlans(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const memberData: Member = {
       id: member?.id || 0,
       name: formData.name,
       email: formData.email,
       phone: formData.phone,
-      membershipType: formData.membershipType,
-      status: formData.status as 'ACTIVE' | 'INACTIVE' | 'SUSPENDED',
+      membershipPlan: formData.membershipPlan,
+      status: formData.status as 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'EXPIRED',
       joinDate: member?.joinDate || new Date().toISOString().split('T')[0],
       lastVisit: member?.lastVisit || null,
       totalVisits: member?.totalVisits || 0,
+      endDate: member?.endDate,
     };
-    onSave(memberData);
+    
+    try {
+      await onSave(memberData);
+    } catch (error: any) {
+      if (error.message && error.message.includes('No gym found')) {
+        alert('Please create a gym first before adding members. Go to the Gym Settings page to create your gym.');
+      } else {
+        alert('Error creating member: ' + (error.message || 'Unknown error'));
+      }
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -115,17 +168,36 @@ const MemberModal: React.FC<MemberModalProps> = ({ member, onClose, onSave, titl
           </div>
           
           <div className="form-group">
-            <label htmlFor="membershipType">Membership Type</label>
+            <label htmlFor="membershipPlan">Membership Plan *</label>
             <select
-              id="membershipType"
-              name="membershipType"
-              value={formData.membershipType}
+              id="membershipPlan"
+              name="membershipPlan"
+              value={formData.membershipPlan}
               onChange={handleChange}
+              disabled={isLoadingPlans}
             >
-              <option value="BASIC">Basic</option>
-              <option value="PREMIUM">Premium</option>
-              <option value="VIP">VIP</option>
+              <option value="">{isLoadingPlans ? 'Loading plans...' : 'Select a membership plan'}</option>
+              {Array.isArray(membershipPlans) && membershipPlans.length > 0 ? (
+                membershipPlans.map((plan) => (
+                  <option key={plan.id} value={plan.planName}>
+                    {plan.planName} - ${plan.planCurrentPrice} ({plan.durationMonths} months)
+                  </option>
+                ))
+              ) : (
+                !isLoadingPlans && (
+                  <>
+                    <option value="Basic">Basic Plan</option>
+                    <option value="Premium">Premium Plan</option>
+                    <option value="VIP">VIP Plan</option>
+                  </>
+                )
+              )}
             </select>
+            {!isLoadingPlans && (!Array.isArray(membershipPlans) || membershipPlans.length === 0) && (
+              <div className="form-help">
+                No membership plans available. Please create membership plans first or contact support if this persists.
+              </div>
+            )}
           </div>
           
           <div className="form-group">
@@ -139,6 +211,7 @@ const MemberModal: React.FC<MemberModalProps> = ({ member, onClose, onSave, titl
               <option value="ACTIVE">Active</option>
               <option value="INACTIVE">Inactive</option>
               <option value="SUSPENDED">Suspended</option>
+              <option value="EXPIRED">Expired</option>
             </select>
           </div>
           

@@ -12,12 +12,13 @@ interface Member {
   name: string;
   email: string;
   phone: string;
-  membershipType: string;
+  membershipPlan: string;
   joinDate: string;
-  status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
+  status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'EXPIRED';
   lastVisit: string | null;
   totalVisits: number;
   profileImageUrl?: string;
+  endDate?: string;
 }
 
 
@@ -66,7 +67,9 @@ const MembersPage: React.FC = () => {
       });
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        // Don't clear the existing members list on error
+        console.error(`HTTP error! status: ${response.status}`);
+        return;
       }
       
       const data = await response.json();
@@ -103,7 +106,9 @@ const MembersPage: React.FC = () => {
       
     } catch (error) {
       console.error('Error fetching members:', error);
-      if (!append) {
+      // Don't clear the existing members list on error
+      // Only clear if this is the initial load and we have no members yet
+      if (!append && members.length === 0) {
         setMembers([]);
         setFilteredMembers([]);
       }
@@ -137,10 +142,14 @@ const MembersPage: React.FC = () => {
   const handleAddMember = async (memberData: Omit<Member, 'id'>) => {
     try {
       const newMember = await api.createMember(memberData);
-      setMembers([...members, newMember]);
+      // Refresh the members list to show updated data
+      await fetchMembers(0, searchTerm, statusFilter, membershipFilter, false);
       setShowAddModal(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating member:', error);
+      // Show user-friendly error message
+      const errorMessage = error.message || 'Failed to create member. Please try again.';
+      alert(`Error: ${errorMessage}`);
     }
   };
 
@@ -149,13 +158,15 @@ const MembersPage: React.FC = () => {
       if (editingMember) {
         // Update existing member
         const updatedMember = await api.updateMember(editingMember.id, memberData);
-        setMembers(members.map(member => 
-          member.id === memberData.id ? { ...member, ...updatedMember } : member
-        ));
+        // Refresh the members list to show updated data
+        await fetchMembers(0, searchTerm, statusFilter, membershipFilter, false);
       }
       setEditingMember(null);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating member:', error);
+      // Show user-friendly error message
+      const errorMessage = error.message || 'Failed to update member. Please try again.';
+      alert(`Error: ${errorMessage}`);
     }
   };
 
@@ -163,10 +174,13 @@ const MembersPage: React.FC = () => {
     if (window.confirm('Are you sure you want to delete this member?')) {
       try {
         await api.deleteMember(id);
-        setMembers(members.filter(member => member.id !== id));
-        setFilteredMembers(filteredMembers.filter(member => member.id !== id));
-      } catch (error) {
+        // Refresh the members list to show updated data
+        await fetchMembers(0, searchTerm, statusFilter, membershipFilter, false);
+      } catch (error: any) {
         console.error('Error deleting member:', error);
+        // Show user-friendly error message
+        const errorMessage = error.message || 'Failed to delete member. Please try again.';
+        alert(`Error: ${errorMessage}`);
       }
     }
   };
@@ -176,17 +190,21 @@ const MembersPage: React.FC = () => {
       case 'ACTIVE': return '#10b981';
       case 'INACTIVE': return '#f59e0b';
       case 'SUSPENDED': return '#ef4444';
+      case 'EXPIRED': return '#dc2626';
       default: return '#6b7280';
     }
   };
 
-  const getMembershipColor = (type: string) => {
-    switch (type) {
-      case 'VIP': return '#8b5cf6';
-      case 'Premium': return '#3b82f6';
-      case 'Basic': return '#10b981';
-      default: return '#6b7280';
-    }
+  const getMembershipColor = (planName: string) => {
+    if (!planName) return '#6b7280';
+    const plan = planName.toLowerCase();
+    if (plan.includes('vip')) return '#8b5cf6';
+    if (plan.includes('premium')) return '#3b82f6';
+    if (plan.includes('basic')) return '#10b981';
+    if (plan.includes('gold')) return '#f59e0b';
+    if (plan.includes('silver')) return '#6b7280';
+    if (plan.includes('platinum')) return '#8b5cf6';
+    return '#6b7280';
   };
 
   return (
@@ -233,6 +251,7 @@ const MembersPage: React.FC = () => {
                 <option value="ACTIVE">Active</option>
                 <option value="INACTIVE">Inactive</option>
                 <option value="SUSPENDED">Suspended</option>
+                <option value="EXPIRED">Expired</option>
               </select>
               
               <select
@@ -281,7 +300,7 @@ const MembersPage: React.FC = () => {
           <div className="stat-label">Active Members</div>
         </div>
         <div className="stat-card">
-          <div className="stat-number">{members.filter(m => m.membershipType === 'Premium' || m.membershipType === 'VIP').length}</div>
+          <div className="stat-number">{members.filter(m => m.membershipPlan && (m.membershipPlan.toLowerCase().includes('premium') || m.membershipPlan.toLowerCase().includes('vip'))).length}</div>
           <div className="stat-label">Premium Members</div>
         </div>
         <div className="stat-card">
@@ -303,11 +322,11 @@ const MembersPage: React.FC = () => {
               <tr>
                 <th>Member</th>
                 <th>Contact</th>
-                <th>Membership</th>
+                <th>Membership Plan</th>
                 <th>Status</th>
                 <th>Join Date</th>
+                <th>End Date</th>
                 <th>Last Visit</th>
-                <th>Visits</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -341,9 +360,9 @@ const MembersPage: React.FC = () => {
                 <td>
                   <span 
                     className="membership-badge"
-                    style={{ backgroundColor: getMembershipColor(member.membershipType) }}
+                    style={{ backgroundColor: getMembershipColor(member.membershipPlan) }}
                   >
-                    {member.membershipType}
+                    {member.membershipPlan}
                   </span>
                 </td>
                 <td>
@@ -355,8 +374,8 @@ const MembersPage: React.FC = () => {
                   </span>
                 </td>
                 <td>{new Date(member.joinDate).toLocaleDateString()}</td>
+                <td>{member.endDate ? new Date(member.endDate).toLocaleDateString() : 'N/A'}</td>
                 <td>{member.lastVisit ? new Date(member.lastVisit).toLocaleDateString() : 'Never'}</td>
-                <td>{member.totalVisits}</td>
                 <td>
                   <div className="action-buttons">
                     <button 

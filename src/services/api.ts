@@ -38,11 +38,26 @@ class ApiService {
   }
 
   async createMember(memberData: any) {
-    const response = await fetch(`${API_BASE_URL}/members`, {
+    // First, get the user's gyms to get the gymId
+    const gyms = await this.getGyms();
+    if (!gyms || gyms.length === 0) {
+      throw new Error('No gym found. Please create a gym first.');
+    }
+    
+    // Use the first gym (most recent)
+    const gymId = gyms[0].id;
+    
+    const response = await fetch(`${API_BASE_URL}/members?gymId=${gymId}`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
       body: JSON.stringify(memberData),
     });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to create member');
+    }
+    
     return response.json();
   }
 
@@ -65,6 +80,21 @@ class ApiService {
 
   async getMemberStats() {
     const response = await fetch(`${API_BASE_URL}/members/stats`, {
+      headers: this.getAuthHeaders(),
+    });
+    return response.json();
+  }
+
+  // Gyms API
+  async getGyms() {
+    const response = await fetch(`${API_BASE_URL}/gyms`, {
+      headers: this.getAuthHeaders(),
+    });
+    return response.json();
+  }
+
+  async getMembershipPlans() {
+    const response = await fetch(`${API_BASE_URL}/gyms/membership-plans`, {
       headers: this.getAuthHeaders(),
     });
     return response.json();
@@ -458,6 +488,7 @@ class ApiService {
     });
     return response.json();
   }
+
 
   // Analytics API
   async getAnalytics(centerId: number, period: string = 'month') {
