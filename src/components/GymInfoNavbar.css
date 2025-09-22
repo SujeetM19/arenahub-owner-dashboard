@@ -1,0 +1,166 @@
+.gym-info-navbar {
+  background: var(--card-bg, #152F4A);
+  border-bottom: 1px solid var(--border-color, #1E3A56);
+  padding: 0;
+  margin: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.gym-info-navbar.light {
+  background: #ffffff;
+  border-bottom-color: #e0e0e0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.navbar-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.navbar-items {
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.navbar-items::-webkit-scrollbar {
+  display: none;
+}
+
+.navbar-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background: none;
+  border: none;
+  color: var(--text-secondary, #A1AEC4);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  white-space: nowrap;
+  border-bottom: 3px solid transparent;
+}
+
+.navbar-item:hover {
+  color: var(--text-primary, #E6E9EF);
+  background: var(--bg-tertiary, #1E3A56);
+}
+
+.gym-info-navbar.light .navbar-item:hover {
+  background: #f8f9fa;
+  color: #333;
+}
+
+.navbar-item.active {
+  color: var(--accent-primary, #60a5fa);
+  background: var(--bg-tertiary, #1E3A56);
+  border-bottom-color: var(--accent-primary, #60a5fa);
+}
+
+.gym-info-navbar.light .navbar-item.active {
+  background: #f8f9fa;
+  color: #1A73E8;
+  border-bottom-color: #1A73E8;
+}
+
+.navbar-icon {
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.navbar-item.active .navbar-icon {
+  color: var(--accent-primary, #60a5fa);
+}
+
+.gym-info-navbar.light .navbar-item.active .navbar-icon {
+  color: #1A73E8;
+}
+
+.navbar-label {
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.navbar-indicator {
+  position: absolute;
+  bottom: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  height: 3px;
+  background: var(--accent-primary, #60a5fa);
+  border-radius: 2px 2px 0 0;
+}
+
+.gym-info-navbar.light .navbar-indicator {
+  background: #1A73E8;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .navbar-container {
+    padding: 0 1rem;
+  }
+  
+  .navbar-item {
+    padding: 0.75rem 1rem;
+    font-size: 0.8rem;
+  }
+  
+  .navbar-icon {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar-item {
+    padding: 0.75rem 0.75rem;
+    gap: 0.5rem;
+  }
+  
+  .navbar-label {
+    font-size: 0.75rem;
+  }
+}
+
+/* Animation for smooth transitions */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.navbar-item {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Focus styles for accessibility */
+.navbar-item:focus {
+  outline: 2px solid var(--accent-primary, #60a5fa);
+  outline-offset: 2px;
+}
+
+.gym-info-navbar.light .navbar-item:focus {
+  outline-color: #1A73E8;
+}
+
+
+
+
+
+

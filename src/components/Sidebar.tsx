@@ -255,6 +255,7 @@ const Sidebar: React.FC<SidebarProps> = ({ gyms, gymNames, owner, onCollapseChan
   const gymInfoItems = [
     { id: 'fundamentals', label: 'Fundamentals', icon: Info, path: '/fundamentals' },
     { id: 'membership-plans', label: 'Membership Plans', icon: CreditCard, path: '/membership-plans' },
+    { id: 'facilities', label: 'Facilities', icon: Package, path: '/facilities' },
     { id: 'gallery', label: 'Gallery', icon: Image, path: '/gallery' },
   ];
 

@@ -14,17 +14,9 @@ interface Trainer {
   experienceYears: number; // years
   rating: number;
   hourlyRate: number;
-  availability: {
-    monday: string[];
-    tuesday: string[];
-    wednesday: string[];
-    thursday: string[];
-    friday: string[];
-    saturday: string[];
-    sunday: string[];
-  };
+  availability: string; // JSON string for weekly availability
   bio: string;
-  profileImage?: string;
+  profileImageUrl?: string;
   status: 'ACTIVE' | 'INACTIVE' | 'ON_LEAVE';
   joinDate: string;
   totalClients: number;
@@ -46,6 +38,10 @@ const TrainersPage: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingTrainer, setEditingTrainer] = useState<Trainer | null>(null);
+  const [newSpecialty, setNewSpecialty] = useState('');
+  const [newCertification, setNewCertification] = useState('');
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+  const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);
   const [newTrainer, setNewTrainer] = useState<Omit<Trainer, 'id'>>({
     name: '',
     email: '',
@@ -55,15 +51,7 @@ const TrainersPage: React.FC = () => {
     experienceYears: 0,
     rating: 0,
     hourlyRate: 0,
-    availability: {
-      monday: [],
-      tuesday: [],
-      wednesday: [],
-      thursday: [],
-      friday: [],
-      saturday: [],
-      sunday: []
-    },
+    availability: '{}',
     bio: '',
     status: 'ACTIVE',
     joinDate: new Date().toISOString().split('T')[0],
@@ -75,6 +63,55 @@ const TrainersPage: React.FC = () => {
   const specialties = ['All', 'Strength Training', 'Weight Loss', 'Bodybuilding', 'Yoga', 'Pilates', 'HIIT', 'Cardio', 'Functional Training', 'Rehabilitation', 'Senior Fitness'];
   const statuses = ['All', 'ACTIVE', 'INACTIVE', 'ON_LEAVE'];
 
+  // Helper functions for managing specialties and certifications
+  const addSpecialty = (specialty: string) => {
+    if (specialty && !newTrainer.specialties.includes(specialty)) {
+      setNewTrainer(prev => ({
+        ...prev,
+        specialties: [...prev.specialties, specialty]
+      }));
+    }
+  };
+
+  const removeSpecialty = (specialty: string) => {
+    setNewTrainer(prev => ({
+      ...prev,
+      specialties: prev.specialties.filter(s => s !== specialty)
+    }));
+  };
+
+  const addCertification = (certification: string) => {
+    if (certification && !newTrainer.certifications.includes(certification)) {
+      setNewTrainer(prev => ({
+        ...prev,
+        certifications: [...prev.certifications, certification]
+      }));
+    }
+  };
+
+  const removeCertification = (certification: string) => {
+    setNewTrainer(prev => ({
+      ...prev,
+      certifications: prev.certifications.filter(c => c !== certification)
+    }));
+  };
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setProfileImageFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setProfileImagePreview(e.target?.result as string);
+        setNewTrainer(prev => ({
+          ...prev,
+          profileImageUrl: e.target?.result as string
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   // Load trainers from API
   useEffect(() => {
     loadTrainers();
@@ -84,7 +121,9 @@ const TrainersPage: React.FC = () => {
     try {
       setLoading(true);
       const response = await api.getTrainers();
-      setTrainers(response.content || response);
+      // Handle both paginated and non-paginated responses
+      const trainersData = response.content || response;
+      setTrainers(Array.isArray(trainersData) ? trainersData : []);
     } catch (err) {
       setError('Failed to load trainers');
       console.error('Error loading trainers:', err);
@@ -95,9 +134,19 @@ const TrainersPage: React.FC = () => {
 
   const handleAddTrainer = async () => {
     try {
+      // Get the user's gyms to get the gymId
+      const gyms = await api.getGyms();
+      if (!gyms || gyms.length === 0) {
+        setError('No gym found. Please create a gym first.');
+        return;
+      }
+      
+      // Use the first gym (most recent)
+      const gymId = gyms[0].id;
+      
       const response = await api.createTrainer({
         ...newTrainer,
-        centerId: 1 // Default center ID, should be dynamic
+        centerId: gymId
       });
       setTrainers(prev => [response, ...prev]);
       setShowAddModal(false);
@@ -110,15 +159,7 @@ const TrainersPage: React.FC = () => {
         experienceYears: 0,
         rating: 0,
         hourlyRate: 0,
-        availability: {
-          monday: [],
-          tuesday: [],
-          wednesday: [],
-          thursday: [],
-          friday: [],
-          saturday: [],
-          sunday: []
-        },
+        availability: '{}',
         bio: '',
         status: 'ACTIVE',
         joinDate: new Date().toISOString().split('T')[0],
@@ -126,6 +167,10 @@ const TrainersPage: React.FC = () => {
         totalSessions: 0,
         notes: ''
       });
+      setProfileImageFile(null);
+      setProfileImagePreview(null);
+      setNewSpecialty('');
+      setNewCertification('');
     } catch (err) {
       setError('Failed to add trainer');
       console.error('Error adding trainer:', err);
@@ -134,9 +179,19 @@ const TrainersPage: React.FC = () => {
 
   const handleEditTrainer = async (trainer: Trainer) => {
     try {
+      // Get the user's gyms to get the gymId
+      const gyms = await api.getGyms();
+      if (!gyms || gyms.length === 0) {
+        setError('No gym found. Please create a gym first.');
+        return;
+      }
+      
+      // Use the first gym (most recent)
+      const gymId = gyms[0].id;
+      
       const response = await api.updateTrainer(trainer.id, {
         ...trainer,
-        centerId: 1 // Default center ID, should be dynamic
+        centerId: gymId
       });
       setTrainers(prev => prev.map(t => t.id === trainer.id ? response : t));
       setEditingTrainer(null);
@@ -154,6 +209,20 @@ const TrainersPage: React.FC = () => {
       setError('Failed to delete trainer');
       console.error('Error deleting trainer:', err);
     }
+  };
+
+  const openEditModal = (trainer: Trainer) => {
+    setEditingTrainer(trainer);
+    setProfileImagePreview(trainer.profileImageUrl || null);
+  };
+
+  const closeModals = () => {
+    setShowAddModal(false);
+    setEditingTrainer(null);
+    setProfileImageFile(null);
+    setProfileImagePreview(null);
+    setNewSpecialty('');
+    setNewCertification('');
   };
 
   const filteredTrainers = trainers.filter(trainer => {
@@ -312,8 +381,8 @@ const TrainersPage: React.FC = () => {
             <div key={trainer.id} className="trainer-card">
               <div className="card-header">
                 <div className="trainer-avatar">
-                  {trainer.profileImage ? (
-                    <img src={trainer.profileImage} alt={trainer.name} />
+                  {trainer.profileImageUrl ? (
+                    <img src={trainer.profileImageUrl} alt={trainer.name} />
                   ) : (
                     <User size={24} />
                   )}
@@ -396,7 +465,7 @@ const TrainersPage: React.FC = () => {
               <div className="card-actions">
                 <button 
                   className="action-btn edit"
-                  onClick={() => handleEditTrainer(trainer)}
+                  onClick={() => openEditModal(trainer)}
                 >
                   <Edit size={16} />
                   Edit
@@ -422,7 +491,7 @@ const TrainersPage: React.FC = () => {
               <h2>Add Trainer</h2>
               <button 
                 className="close-btn"
-                onClick={() => setShowAddModal(false)}
+                onClick={closeModals}
               >
                 ×
               </button>
@@ -505,6 +574,116 @@ const TrainersPage: React.FC = () => {
                     onChange={(e) => setNewTrainer({...newTrainer, joinDate: e.target.value})}
                   />
                 </div>
+                <div className="form-group">
+                  <label>Profile Image</label>
+                  <div className="image-upload-container">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="image-upload-input"
+                      id="profile-image-upload"
+                    />
+                    <label htmlFor="profile-image-upload" className="image-upload-label">
+                      {profileImagePreview ? (
+                        <img src={profileImagePreview} alt="Profile preview" className="image-preview" />
+                      ) : (
+                        <div className="image-upload-placeholder">
+                          <User size={24} />
+                          <span>Upload Image</span>
+                        </div>
+                      )}
+                    </label>
+                  </div>
+                </div>
+                <div className="form-group full-width">
+                  <label>Specialties</label>
+                  <div className="tag-input-container">
+                    <div className="tag-input">
+                      <input
+                        type="text"
+                        value={newSpecialty}
+                        onChange={(e) => setNewSpecialty(e.target.value)}
+                        placeholder="Add specialty"
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addSpecialty(newSpecialty);
+                            setNewSpecialty('');
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          addSpecialty(newSpecialty);
+                          setNewSpecialty('');
+                        }}
+                        className="add-tag-btn"
+                      >
+                        Add
+                      </button>
+                    </div>
+                    <div className="tag-list">
+                      {newTrainer.specialties.map((specialty, index) => (
+                        <span key={index} className="tag">
+                          {specialty}
+                          <button
+                            type="button"
+                            onClick={() => removeSpecialty(specialty)}
+                            className="remove-tag"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="form-group full-width">
+                  <label>Certifications</label>
+                  <div className="tag-input-container">
+                    <div className="tag-input">
+                      <input
+                        type="text"
+                        value={newCertification}
+                        onChange={(e) => setNewCertification(e.target.value)}
+                        placeholder="Add certification"
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addCertification(newCertification);
+                            setNewCertification('');
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          addCertification(newCertification);
+                          setNewCertification('');
+                        }}
+                        className="add-tag-btn"
+                      >
+                        Add
+                      </button>
+                    </div>
+                    <div className="tag-list">
+                      {newTrainer.certifications.map((certification, index) => (
+                        <span key={index} className="tag">
+                          {certification}
+                          <button
+                            type="button"
+                            onClick={() => removeCertification(certification)}
+                            className="remove-tag"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
                 <div className="form-group full-width">
                   <label>Bio</label>
                   <textarea
@@ -528,7 +707,7 @@ const TrainersPage: React.FC = () => {
             <div className="modal-actions">
               <button 
                 className="cancel-btn"
-                onClick={() => setShowAddModal(false)}
+                onClick={closeModals}
               >
                 Cancel
               </button>
@@ -551,7 +730,7 @@ const TrainersPage: React.FC = () => {
               <h2>Edit Trainer</h2>
               <button 
                 className="close-btn"
-                onClick={() => setEditingTrainer(null)}
+                onClick={closeModals}
               >
                 ×
               </button>
@@ -649,7 +828,7 @@ const TrainersPage: React.FC = () => {
             <div className="modal-actions">
               <button 
                 className="cancel-btn"
-                onClick={() => setEditingTrainer(null)}
+                onClick={closeModals}
               >
                 Cancel
               </button>

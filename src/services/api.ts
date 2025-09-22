@@ -94,7 +94,67 @@ class ApiService {
   }
 
   async getMembershipPlans() {
-    const response = await fetch(`${API_BASE_URL}/gyms/membership-plans`, {
+    const response = await fetch(`${API_BASE_URL}/membership-plans`, {
+      headers: this.getAuthHeaders(),
+    });
+    return response.json();
+  }
+
+  async createMembershipPlan(planData: any) {
+    const response = await fetch(`${API_BASE_URL}/membership-plans`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(planData),
+    });
+    return response.json();
+  }
+
+  async updateMembershipPlan(id: number, planData: any) {
+    const response = await fetch(`${API_BASE_URL}/membership-plans/${id}`, {
+      method: 'PUT',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(planData),
+    });
+    return response.json();
+  }
+
+  async deleteMembershipPlan(id: number) {
+    const response = await fetch(`${API_BASE_URL}/membership-plans/${id}`, {
+      method: 'DELETE',
+      headers: this.getAuthHeaders(),
+    });
+    return response.json();
+  }
+
+  // Facilities API
+  async getFacilities() {
+    const response = await fetch(`${API_BASE_URL}/facilities`, {
+      headers: this.getAuthHeaders(),
+    });
+    return response.json();
+  }
+
+  async createFacility(facilityData: any) {
+    const response = await fetch(`${API_BASE_URL}/facilities`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(facilityData),
+    });
+    return response.json();
+  }
+
+  async updateFacility(id: number, facilityData: any) {
+    const response = await fetch(`${API_BASE_URL}/facilities/${id}`, {
+      method: 'PUT',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(facilityData),
+    });
+    return response.json();
+  }
+
+  async deleteFacility(id: number) {
+    const response = await fetch(`${API_BASE_URL}/facilities/${id}`, {
+      method: 'DELETE',
       headers: this.getAuthHeaders(),
     });
     return response.json();
@@ -226,12 +286,43 @@ class ApiService {
   }
 
   async createGalleryItem(galleryData: any) {
-    const response = await fetch(`${API_BASE_URL}/gallery`, {
-      method: 'POST',
-      headers: this.getAuthHeaders(),
-      body: JSON.stringify(galleryData),
-    });
-    return response.json();
+    // First, get the user's gyms to get the gymId
+    const gyms = await this.getGyms();
+    if (!gyms || gyms.length === 0) {
+      throw new Error('No gym found. Please create a gym first.');
+    }
+    
+    // Use the first gym (most recent)
+    const gymId = gyms[0].id;
+    
+        // If galleryData is FormData (file upload), use the upload endpoint
+        if (galleryData instanceof FormData) {
+          // Add the gymId to the FormData
+          galleryData.append('gymId', gymId.toString());
+      
+      const response = await fetch(`${API_BASE_URL}/gallery/upload`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('ownerToken')}`,
+          // Don't set Content-Type for FormData, let browser set it with boundary
+        },
+        body: galleryData,
+      });
+      return response.json();
+        } else {
+          // For JSON data, add gymId and send as JSON
+          const dataWithGymId = {
+            ...galleryData,
+            gymId: gymId
+          };
+      
+      const response = await fetch(`${API_BASE_URL}/gallery`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(dataWithGymId),
+      });
+      return response.json();
+    }
   }
 
   async updateGalleryItem(id: number, galleryData: any) {
@@ -338,6 +429,17 @@ class ApiService {
     const response = await fetch(url, {
       headers: this.getAuthHeaders(),
     });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw {
+        status: response.status,
+        error: errorData.error || 'Request failed',
+        message: errorData.message || `HTTP ${response.status}`,
+        ...errorData
+      };
+    }
+    
     return response.json();
   }
 
@@ -450,21 +552,21 @@ class ApiService {
 
   // Fundamentals API
   async getCenters() {
-    const response = await fetch(`${API_BASE_URL}/fundamentals/centers`, {
+    const response = await fetch(`${API_BASE_URL}/fundamentals/gyms`, {
       headers: this.getAuthHeaders(),
     });
     return response.json();
   }
 
   async getCenterById(id: number) {
-    const response = await fetch(`${API_BASE_URL}/fundamentals/centers/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/fundamentals/gyms/${id}`, {
       headers: this.getAuthHeaders(),
     });
     return response.json();
   }
 
   async updateCenter(id: number, centerData: any) {
-    const response = await fetch(`${API_BASE_URL}/fundamentals/centers/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/fundamentals/gyms/${id}`, {
       method: 'PUT',
       headers: this.getAuthHeaders(),
       body: JSON.stringify(centerData),
@@ -473,7 +575,7 @@ class ApiService {
   }
 
   async createCenter(centerData: any) {
-    const response = await fetch(`${API_BASE_URL}/fundamentals/centers`, {
+    const response = await fetch(`${API_BASE_URL}/fundamentals/gyms`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
       body: JSON.stringify(centerData),
@@ -482,7 +584,7 @@ class ApiService {
   }
 
   async deleteCenter(id: number) {
-    const response = await fetch(`${API_BASE_URL}/fundamentals/centers/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/fundamentals/gyms/${id}`, {
       method: 'DELETE',
       headers: this.getAuthHeaders(),
     });

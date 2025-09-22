@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
-import { Plus, Upload, Image as ImageIcon, Trash2, Edit, Eye, Download, Search, Filter } from 'lucide-react';
+import { Plus, Upload, Image as ImageIcon, Trash2, Edit, Eye, Download, Search, Filter, X, Save, ImagePlus } from 'lucide-react';
+import GymInfoNavbar from './GymInfoNavbar';
 import api from '../services/api';
 import './GalleryPage.css';
 
@@ -8,14 +9,15 @@ interface GalleryItem {
   id: number;
   name: string;
   fileUrl: string;
+  imageUrl: string;
   category: string;
   createdAt: string;
   fileSize: number;
   description?: string;
   fileType?: string;
   uploadedBy?: string;
-  centerId?: number;
-  centerName?: string;
+  gymId?: number;
+  gymName?: string;
 }
 
 const GalleryPage: React.FC = () => {
@@ -28,10 +30,31 @@ const GalleryPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [editingItem, setEditingItem] = useState<GalleryItem | null>(null);
+  const [uploadFiles, setUploadFiles] = useState<FileList | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({});
+  const [uploadCategory, setUploadCategory] = useState('GYM_FACILITIES');
+  const [uploadDescription, setUploadDescription] = useState('');
+  const [uploadName, setUploadName] = useState('');
 
-  const categories = ['All', 'FACILITY', 'EQUIPMENT', 'CLASSES', 'SERVICES', 'EVENTS', 'AMENITIES'];
+  const categories = [
+    'All', 
+    'GYM_FACILITIES', 
+    'EQUIPMENT', 
+    'TRAINING_AREA', 
+    'LOCKER_ROOM', 
+    'RECEPTION', 
+    'PARKING', 
+    'OUTDOOR_AREA', 
+    'CLASSES', 
+    'EVENTS', 
+    'MEMBERS', 
+    'STAFF', 
+    'OTHER'
+  ];
 
   // Load gallery items from API
   useEffect(() => {
@@ -42,10 +65,13 @@ const GalleryPage: React.FC = () => {
     try {
       setLoading(true);
       const response = await api.getGalleryItems();
-      setGalleryItems(response.content || response);
+      // Handle paginated response - extract content array
+      const items = response.content || response || [];
+      setGalleryItems(Array.isArray(items) ? items : []);
     } catch (err) {
       setError('Failed to load gallery items');
       console.error('Error loading gallery items:', err);
+      setGalleryItems([]); // Ensure galleryItems is always an array
     } finally {
       setLoading(false);
     }
@@ -75,10 +101,79 @@ const GalleryPage: React.FC = () => {
   };
 
   const handleUpload = async (files: FileList) => {
-    // This would need to be implemented with file upload logic
-    console.log('Upload files:', files);
-    // For now, just close the modal
-    setShowUploadModal(false);
+    if (!files || files.length === 0) return;
+
+    try {
+      setUploadProgress({});
+      const uploadPromises = Array.from(files).map(async (file, index) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('name', uploadName || file.name);
+        formData.append('category', uploadCategory);
+        formData.append('description', uploadDescription);
+
+        // Simulate progress
+        const progressKey = file.name;
+        setUploadProgress(prev => ({ ...prev, [progressKey]: 0 }));
+        
+        const interval = setInterval(() => {
+          setUploadProgress(prev => ({
+            ...prev,
+            [progressKey]: Math.min(prev[progressKey] + 10, 90)
+          }));
+        }, 200);
+
+        try {
+          const response = await api.createGalleryItem(formData);
+          clearInterval(interval);
+          setUploadProgress(prev => ({ ...prev, [progressKey]: 100 }));
+          return response;
+        } catch (error) {
+          clearInterval(interval);
+          throw error;
+        }
+      });
+
+      await Promise.all(uploadPromises);
+      await loadGalleryItems();
+      setShowUploadModal(false);
+      setUploadFiles(null);
+      setUploadProgress({});
+      setUploadName('');
+      setUploadDescription('');
+      setUploadCategory('GYM_FACILITIES');
+    } catch (err) {
+      console.error('Error uploading files:', err);
+      setError('Failed to upload files');
+    }
+  };
+
+  const handleEditItem = async (item: GalleryItem) => {
+    setEditingItem({ ...item });
+    setShowEditModal(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingItem) return;
+
+    try {
+      await api.updateGalleryItem(editingItem.id, {
+        name: editingItem.name,
+        category: editingItem.category,
+        description: editingItem.description || ''
+      });
+      
+      setGalleryItems(prev => 
+        prev.map(item => 
+          item.id === editingItem.id ? editingItem : item
+        )
+      );
+      setShowEditModal(false);
+      setEditingItem(null);
+    } catch (err) {
+      console.error('Error updating item:', err);
+      setError('Failed to update item');
+    }
   };
 
   const filteredItems = galleryItems.filter(item => {
@@ -109,13 +204,17 @@ const GalleryPage: React.FC = () => {
     setSelectedItem(item);
   };
 
-  const handleEditItem = (item: GalleryItem) => {
-    // Implement edit functionality
-    console.log('Edit item:', item);
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   return (
     <div className={`gallery-page ${theme}`}>
+      <GymInfoNavbar />
       <div className="gallery-header">
         <div className="header-content">
           <h1 className="page-title">Gallery</h1>
@@ -225,7 +324,7 @@ const GalleryPage: React.FC = () => {
                       />
                     </div>
                     <div className="item-image" onClick={() => handleViewItem(item)}>
-                      <img src={item.fileUrl} alt={item.name} />
+                      <img src={item.imageUrl || item.fileUrl} alt={item.name} />
                       <div className="image-overlay">
                         <button className="view-btn">
                           <Eye size={20} />
@@ -243,12 +342,6 @@ const GalleryPage: React.FC = () => {
                         onClick={() => handleEditItem(item)}
                       >
                         <Edit size={16} />
-                      </button>
-                      <button 
-                        className="action-btn delete"
-                        onClick={() => handleDeleteItem(item.id)}
-                      >
-                        <Trash2 size={16} />
                       </button>
                     </div>
                   </div>
@@ -321,14 +414,21 @@ const GalleryPage: React.FC = () => {
       {/* Upload Modal */}
       {showUploadModal && (
         <div className="modal-overlay">
-          <div className="modal">
+          <div className="modal upload-modal">
             <div className="modal-header">
               <h2>Upload Images</h2>
               <button 
                 className="close-btn"
-                onClick={() => setShowUploadModal(false)}
+                onClick={() => {
+                  setShowUploadModal(false);
+                  setUploadFiles(null);
+                  setUploadProgress({});
+                  setUploadName('');
+                  setUploadDescription('');
+                  setUploadCategory('GYM_FACILITIES');
+                }}
               >
-                ×
+                <X size={20} />
               </button>
             </div>
             <div className="modal-content">
@@ -337,15 +437,109 @@ const GalleryPage: React.FC = () => {
                   type="file"
                   multiple
                   accept="image/*"
-                  onChange={(e) => e.target.files && handleUpload(e.target.files)}
+                  onChange={(e) => {
+                    setUploadFiles(e.target.files);
+                  }}
                   className="file-input"
                   id="file-upload"
                 />
                 <label htmlFor="file-upload" className="upload-label">
-                  <Upload size={48} />
+                  <ImagePlus size={48} />
                   <h3>Drop images here or click to browse</h3>
                   <p>Supports JPG, PNG, GIF up to 10MB each</p>
                 </label>
+              </div>
+
+              {uploadFiles && uploadFiles.length > 0 && (
+                <div className="upload-preview">
+                  <h4>Selected Files ({uploadFiles.length})</h4>
+                  <div className="file-list">
+                    {Array.from(uploadFiles).map((file, index) => (
+                      <div key={index} className="file-item">
+                        <div className="file-info">
+                          <ImageIcon size={20} />
+                          <span className="file-name">{file.name}</span>
+                          <span className="file-size">{formatFileSize(file.size)}</span>
+                        </div>
+                        {uploadProgress[file.name] !== undefined && (
+                          <div className="progress-bar">
+                            <div 
+                              className="progress-fill" 
+                              style={{ width: `${uploadProgress[file.name]}%` }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="upload-form">
+                    <div className="form-group">
+                      <label htmlFor="upload-name">Image Name</label>
+                      <input
+                        type="text"
+                        id="upload-name"
+                        value={uploadName}
+                        onChange={(e) => setUploadName(e.target.value)}
+                        placeholder="Enter a name for these images..."
+                        className="form-input"
+                        required
+                      />
+                    </div>
+                    
+                    <div className="form-group">
+                      <label htmlFor="upload-category">Category</label>
+                      <select
+                        id="upload-category"
+                        value={uploadCategory}
+                        onChange={(e) => setUploadCategory(e.target.value)}
+                        className="form-select"
+                      >
+                        {categories.filter(cat => cat !== 'All').map(category => (
+                          <option key={category} value={category}>
+                            {category.replace('_', ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    <div className="form-group">
+                      <label htmlFor="upload-description">Description (Optional)</label>
+                      <textarea
+                        id="upload-description"
+                        value={uploadDescription}
+                        onChange={(e) => setUploadDescription(e.target.value)}
+                        placeholder="Add a description for these images..."
+                        className="form-textarea"
+                        rows={3}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="upload-actions">
+                <button 
+                  className="cancel-btn"
+                  onClick={() => {
+                    setShowUploadModal(false);
+                    setUploadFiles(null);
+                    setUploadProgress({});
+                    setUploadName('');
+                    setUploadDescription('');
+                    setUploadCategory('GYM_FACILITIES');
+                  }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="upload-btn"
+                  onClick={() => uploadFiles && handleUpload(uploadFiles)}
+                  disabled={!uploadFiles || uploadFiles.length === 0 || !uploadName.trim()}
+                >
+                  <Upload size={16} />
+                  Upload {uploadFiles ? `(${uploadFiles.length})` : ''}
+                </button>
               </div>
             </div>
           </div>
@@ -367,7 +561,7 @@ const GalleryPage: React.FC = () => {
             </div>
             <div className="modal-content">
               <div className="image-container">
-                <img src={selectedItem.fileUrl} alt={selectedItem.name} />
+                <img src={selectedItem.imageUrl || selectedItem.fileUrl} alt={selectedItem.name} />
               </div>
               <div className="image-details">
                 <h3>{selectedItem.name}</h3>
@@ -384,7 +578,7 @@ const GalleryPage: React.FC = () => {
                 className="download-btn"
                 onClick={() => {
                   const link = document.createElement('a');
-                  link.href = selectedItem.fileUrl;
+                  link.href = selectedItem.imageUrl || selectedItem.fileUrl;
                   link.download = selectedItem.name;
                   link.click();
                 }}
@@ -398,6 +592,83 @@ const GalleryPage: React.FC = () => {
               >
                 <Edit size={16} />
                 Edit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {showEditModal && editingItem && (
+        <div className="modal-overlay">
+          <div className="modal edit-modal">
+            <div className="modal-header">
+              <h2>Edit Image</h2>
+              <button 
+                className="close-btn"
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditingItem(null);
+                }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="modal-content">
+              <div className="edit-form">
+                <div className="form-group">
+                  <label>Image Name</label>
+                  <input
+                    type="text"
+                    value={editingItem.name}
+                    onChange={(e) => setEditingItem({...editingItem, name: e.target.value})}
+                    placeholder="Enter image name"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label>Category</label>
+                  <select
+                    value={editingItem.category}
+                    onChange={(e) => setEditingItem({...editingItem, category: e.target.value})}
+                  >
+                    {categories.filter(cat => cat !== 'All').map(category => (
+                      <option key={category} value={category}>{category}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Description</label>
+                  <textarea
+                    value={editingItem.description || ''}
+                    onChange={(e) => setEditingItem({...editingItem, description: e.target.value})}
+                    placeholder="Enter image description"
+                    rows={3}
+                  />
+                </div>
+
+                <div className="image-preview">
+                  <img src={editingItem.imageUrl || editingItem.fileUrl} alt={editingItem.name} />
+                </div>
+              </div>
+            </div>
+            <div className="modal-actions">
+              <button 
+                className="cancel-btn"
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditingItem(null);
+                }}
+              >
+                Cancel
+              </button>
+              <button 
+                className="save-btn"
+                onClick={handleSaveEdit}
+              >
+                <Save size={16} />
+                Save Changes
               </button>
             </div>
           </div>

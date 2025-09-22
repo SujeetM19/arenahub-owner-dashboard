@@ -8,20 +8,21 @@ interface StaffMember {
   id: number;
   name: string;
   email: string;
-  phone: string;
+  contactNumber: string;
   position: string;
   department: string;
   hireDate: string;
   salary: number;
   status: 'ACTIVE' | 'INACTIVE' | 'ON_LEAVE';
-  permissions: string[];
+  permissions?: string[];
   emergencyContactName: string;
   emergencyContactPhone: string;
   emergencyContactRelationship: string;
   address: string;
   notes?: string;
-  centerId?: number;
-  centerName?: string;
+  profileImageUrl?: string;
+  gymId?: number;
+  gymName?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -40,7 +41,7 @@ const StaffPage: React.FC = () => {
   const [newMember, setNewMember] = useState<Omit<StaffMember, 'id'>>({
     name: '',
     email: '',
-    phone: '',
+    contactNumber: '',
     position: '',
     department: '',
     hireDate: new Date().toISOString().split('T')[0],
@@ -51,8 +52,13 @@ const StaffPage: React.FC = () => {
     emergencyContactPhone: '',
     emergencyContactRelationship: '',
     address: '',
-    notes: ''
+    notes: '',
+    profileImageUrl: ''
   });
+
+  // Image upload states
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+  const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);
 
   const departments = ['All', 'OPERATIONS', 'TRAINING', 'FRONT_DESK', 'MAINTENANCE', 'MANAGEMENT', 'CLEANING', 'SECURITY'];
   const statuses = ['All', 'ACTIVE', 'INACTIVE', 'ON_LEAVE'];
@@ -66,28 +72,93 @@ const StaffPage: React.FC = () => {
   const loadStaffMembers = async () => {
     try {
       setLoading(true);
+      setError(null); // Clear any previous errors
       const response = await api.getStaff();
-      setStaffMembers(response.content || response);
-    } catch (err) {
-      setError('Failed to load staff members');
+      
+      // Handle both paginated and non-paginated responses
+      if (response && typeof response === 'object') {
+        if (response.content && Array.isArray(response.content)) {
+          setStaffMembers(response.content);
+          setError(null); // Clear error on successful data load
+        } else if (Array.isArray(response)) {
+          setStaffMembers(response);
+          setError(null); // Clear error on successful data load
+        } else {
+          setStaffMembers([]);
+        }
+      } else {
+        setStaffMembers([]);
+      }
+    } catch (err: any) {
       console.error('Error loading staff members:', err);
+      
+      // Handle specific error cases
+      if (err.status === 401 || err.status === 403) {
+        setError('Authentication required. Please log in again.');
+      } else {
+        setError('Failed to load staff members. Please try again.');
+      }
+      
+      setStaffMembers([]);
     } finally {
       setLoading(false);
     }
   };
 
+  // Image upload handler
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setProfileImageFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setProfileImagePreview(result);
+        setNewMember({ ...newMember, profileImageUrl: result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Reset image states
+  const resetImageStates = () => {
+    setProfileImageFile(null);
+    setProfileImagePreview(null);
+  };
+
+  // Open edit modal with proper state setup
+  const openEditModal = (member: StaffMember) => {
+    setEditingMember(member);
+    if (member.profileImageUrl) {
+      setProfileImagePreview(member.profileImageUrl);
+    } else {
+      setProfileImagePreview(null);
+    }
+  };
+
+  // Close modals and reset states
+  const closeModals = () => {
+    setShowAddModal(false);
+    setEditingMember(null);
+    resetImageStates();
+  };
+
   const handleAddMember = async () => {
     try {
+      // Get gym ID dynamically
+      const gyms = await api.getGyms();
+      const gymId = gyms.length > 0 ? gyms[0].id : 1;
+      
       const response = await api.createStaff({
         ...newMember,
-        centerId: 1 // Default center ID, should be dynamic
+        gymId: gymId
       });
       setStaffMembers(prev => [response, ...prev]);
       setShowAddModal(false);
       setNewMember({
         name: '',
         email: '',
-        phone: '',
+        contactNumber: '',
         position: '',
         department: '',
         hireDate: new Date().toISOString().split('T')[0],
@@ -98,8 +169,10 @@ const StaffPage: React.FC = () => {
         emergencyContactPhone: '',
         emergencyContactRelationship: '',
         address: '',
-        notes: ''
+        notes: '',
+        profileImageUrl: ''
       });
+      resetImageStates();
     } catch (err) {
       setError('Failed to add staff member');
       console.error('Error adding staff member:', err);
@@ -108,9 +181,13 @@ const StaffPage: React.FC = () => {
 
   const handleEditMember = async (member: StaffMember) => {
     try {
+      // Get gym ID dynamically
+      const gyms = await api.getGyms();
+      const gymId = gyms.length > 0 ? gyms[0].id : 1;
+      
       const response = await api.updateStaff(member.id, {
         ...member,
-        centerId: 1 // Default center ID, should be dynamic
+        gymId: gymId
       });
       setStaffMembers(prev => prev.map(m => m.id === member.id ? response : m));
       setEditingMember(null);
@@ -130,14 +207,14 @@ const StaffPage: React.FC = () => {
     }
   };
 
-  const filteredMembers = staffMembers.filter(member => {
+  const filteredMembers = Array.isArray(staffMembers) ? staffMembers.filter(member => {
     const matchesSearch = member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          member.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          member.position.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesDepartment = selectedDepartment === 'All' || member.department === selectedDepartment;
     const matchesStatus = selectedStatus === 'All' || member.status === selectedStatus;
     return matchesSearch && matchesDepartment && matchesStatus;
-  });
+  }) : [];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -159,15 +236,15 @@ const StaffPage: React.FC = () => {
 
 
   const getActiveStaffCount = () => {
-    return staffMembers.filter(member => member.status === 'ACTIVE').length;
+    return Array.isArray(staffMembers) ? staffMembers.filter(member => member.status === 'ACTIVE').length : 0;
   };
 
   const getTotalSalary = () => {
-    return staffMembers.reduce((total, member) => total + member.salary, 0);
+    return Array.isArray(staffMembers) ? staffMembers.reduce((total, member) => total + (member.salary || 0), 0) : 0;
   };
 
   const getAverageSalary = () => {
-    return staffMembers.length > 0 ? getTotalSalary() / staffMembers.length : 0;
+    return Array.isArray(staffMembers) && staffMembers.length > 0 ? getTotalSalary() / staffMembers.length : 0;
   };
 
   return (
@@ -195,7 +272,22 @@ const StaffPage: React.FC = () => {
       ) : error ? (
         <div className="error-state">
           <p>{error}</p>
-          <button onClick={loadStaffMembers}>Retry</button>
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+            <button onClick={loadStaffMembers}>Retry</button>
+            {error.includes('Authentication') && (
+              <button 
+                onClick={() => {
+                  localStorage.removeItem('ownerToken');
+                  localStorage.removeItem('ownerData');
+                  localStorage.removeItem('gymNamesData');
+                  window.location.reload();
+                }}
+                style={{ backgroundColor: '#ef4444', color: 'white' }}
+              >
+                Log In Again
+              </button>
+            )}
+          </div>
         </div>
       ) : (
         <>
@@ -206,7 +298,7 @@ const StaffPage: React.FC = () => {
             <User size={24} />
           </div>
           <div className="stat-content">
-            <h3>{staffMembers.length}</h3>
+            <h3>{Array.isArray(staffMembers) ? staffMembers.length : 0}</h3>
             <p>Total Staff</p>
           </div>
         </div>
@@ -280,7 +372,15 @@ const StaffPage: React.FC = () => {
             <div key={member.id} className="staff-card">
               <div className="card-header">
                 <div className="member-avatar">
-                  <User size={24} />
+                  {member.profileImageUrl ? (
+                    <img 
+                      src={member.profileImageUrl} 
+                      alt={member.name}
+                      className="profile-image"
+                    />
+                  ) : (
+                    <User size={24} />
+                  )}
                 </div>
                 <div className="member-info">
                   <h3 className="member-name">{member.name}</h3>
@@ -304,7 +404,7 @@ const StaffPage: React.FC = () => {
                   </div>
                   <div className="contact-item">
                     <Phone size={16} />
-                    <span>{member.phone}</span>
+                    <span>{member.contactNumber || 'N/A'}</span>
                   </div>
                   <div className="contact-item">
                     <Calendar size={16} />
@@ -317,10 +417,10 @@ const StaffPage: React.FC = () => {
                     <strong>Department:</strong> {member.department}
                   </div>
                   <div className="detail-item">
-                    <strong>Salary:</strong> ${member.salary.toLocaleString()}
+                    <strong>Salary:</strong> ${(member.salary || 0).toLocaleString()}
                   </div>
                   <div className="detail-item">
-                    <strong>Address:</strong> {member.address}
+                    <strong>Address:</strong> {member.address || 'N/A'}
                   </div>
                   {member.notes && (
                     <div className="detail-item">
@@ -332,11 +432,13 @@ const StaffPage: React.FC = () => {
                 <div className="permissions">
                   <strong>Permissions:</strong>
                   <div className="permission-tags">
-                    {member.permissions.map((permission, index) => (
+                    {member.permissions && Array.isArray(member.permissions) ? member.permissions.map((permission, index) => (
                       <span key={index} className="permission-tag">
                         {permission}
                       </span>
-                    ))}
+                    )) : (
+                      <span className="permission-tag">No permissions assigned</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -344,7 +446,7 @@ const StaffPage: React.FC = () => {
               <div className="card-actions">
                 <button 
                   className="action-btn edit"
-                  onClick={() => handleEditMember(member)}
+                  onClick={() => openEditModal(member)}
                 >
                   <Edit size={16} />
                   Edit
@@ -370,13 +472,39 @@ const StaffPage: React.FC = () => {
               <h2>Add Staff Member</h2>
               <button 
                 className="close-btn"
-                onClick={() => setShowAddModal(false)}
+                onClick={closeModals}
               >
                 ×
               </button>
             </div>
             <div className="modal-content">
               <div className="form-grid">
+                <div className="form-group full-width">
+                  <label>Profile Image</label>
+                  <div className="image-upload-container">
+                    <input
+                      type="file"
+                      id="profile-image-upload"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="image-upload-input"
+                    />
+                    <label htmlFor="profile-image-upload" className="image-upload-label">
+                      {profileImagePreview ? (
+                        <img 
+                          src={profileImagePreview} 
+                          alt="Profile preview" 
+                          className="image-preview"
+                        />
+                      ) : (
+                        <div className="image-upload-placeholder">
+                          <User size={24} />
+                          <span>Upload Profile Image</span>
+                        </div>
+                      )}
+                    </label>
+                  </div>
+                </div>
                 <div className="form-group">
                   <label>Full Name</label>
                   <input
@@ -399,8 +527,8 @@ const StaffPage: React.FC = () => {
                   <label>Phone</label>
                   <input
                     type="tel"
-                    value={newMember.phone}
-                    onChange={(e) => setNewMember({...newMember, phone: e.target.value})}
+                    value={newMember.contactNumber}
+                    onChange={(e) => setNewMember({...newMember, contactNumber: e.target.value})}
                     placeholder="Enter phone number"
                   />
                 </div>
@@ -515,7 +643,7 @@ const StaffPage: React.FC = () => {
             <div className="modal-actions">
               <button 
                 className="cancel-btn"
-                onClick={() => setShowAddModal(false)}
+                onClick={closeModals}
               >
                 Cancel
               </button>
@@ -538,13 +666,39 @@ const StaffPage: React.FC = () => {
               <h2>Edit Staff Member</h2>
               <button 
                 className="close-btn"
-                onClick={() => setEditingMember(null)}
+                onClick={closeModals}
               >
                 ×
               </button>
             </div>
             <div className="modal-content">
               <div className="form-grid">
+                <div className="form-group full-width">
+                  <label>Profile Image</label>
+                  <div className="image-upload-container">
+                    <input
+                      type="file"
+                      id="edit-profile-image-upload"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="image-upload-input"
+                    />
+                    <label htmlFor="edit-profile-image-upload" className="image-upload-label">
+                      {profileImagePreview ? (
+                        <img 
+                          src={profileImagePreview} 
+                          alt="Profile preview" 
+                          className="image-preview"
+                        />
+                      ) : (
+                        <div className="image-upload-placeholder">
+                          <User size={24} />
+                          <span>Upload Profile Image</span>
+                        </div>
+                      )}
+                    </label>
+                  </div>
+                </div>
                 <div className="form-group">
                   <label>Full Name</label>
                   <input
@@ -565,8 +719,8 @@ const StaffPage: React.FC = () => {
                   <label>Phone</label>
                   <input
                     type="tel"
-                    value={editingMember.phone}
-                    onChange={(e) => setEditingMember({...editingMember, phone: e.target.value})}
+                    value={editingMember.contactNumber}
+                    onChange={(e) => setEditingMember({...editingMember, contactNumber: e.target.value})}
                   />
                 </div>
                 <div className="form-group">
@@ -672,7 +826,7 @@ const StaffPage: React.FC = () => {
             <div className="modal-actions">
               <button 
                 className="cancel-btn"
-                onClick={() => setEditingMember(null)}
+                onClick={closeModals}
               >
                 Cancel
               </button>

@@ -119,7 +119,7 @@ const MemberModal: React.FC<MemberModalProps> = ({ member, onClose, onSave, titl
           lastVisit: member?.lastVisit || null,
           totalVisits: member?.totalVisits || 0,
           endDate: member?.endDate,
-          profileImageUrl: profileImageUrl,
+          profilePic: profileImageUrl,
         };
         
         try {
@@ -146,7 +146,7 @@ const MemberModal: React.FC<MemberModalProps> = ({ member, onClose, onSave, titl
         lastVisit: member?.lastVisit || null,
         totalVisits: member?.totalVisits || 0,
         endDate: member?.endDate,
-        profileImageUrl: profileImageUrl,
+        profilePic: profileImageUrl,
       };
       
       try {

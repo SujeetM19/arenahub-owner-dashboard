@@ -13,6 +13,7 @@ import PreferencesPage from './PreferencesPage';
 import AttendancePage from './AttendancePage';
 import FundamentalsPage from './FundamentalsPage';
 import MembershipPlansPage from './MembershipPlansPage';
+import FacilitiesPage from './FacilitiesPage';
 import GalleryPage from './GalleryPage';
 import InventoryPage from './InventoryPage';
 import StaffPage from './StaffPage';
@@ -170,6 +171,12 @@ const Dashboard: React.FC<DashboardProps> = ({ ownerName, businessName, gyms, gy
           <Route path="/membership-plans" element={
             <>
               <ErrorBoundary><MembershipPlansPage /></ErrorBoundary>
+            </>
+          } />
+          
+          <Route path="/facilities" element={
+            <>
+              <ErrorBoundary><FacilitiesPage /></ErrorBoundary>
             </>
           } />
           

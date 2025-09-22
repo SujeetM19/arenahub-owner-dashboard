@@ -89,7 +89,7 @@
 
 .plans-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
   max-width: 1400px;
   margin: 0 auto;
@@ -157,6 +157,12 @@
   gap: 0.25rem;
 }
 
+.normal-price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+
 .price-amount {
   font-size: 2.5rem;
   font-weight: 700;
@@ -167,6 +173,27 @@
   font-size: 1rem;
   color: var(--text-secondary, #A1AEC4);
   text-transform: capitalize;
+}
+
+.offer-price {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.current-price {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #10b981;
+}
+
+.original-price {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--text-muted, #A1AEC4);
+  text-decoration: line-through;
+  opacity: 0.7;
 }
 
 .plan-description {
@@ -407,6 +434,95 @@
   margin-right: 0.5rem;
 }
 
+/* Facilities Selection Styles */
+.facilities-selection {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: var(--bg-tertiary, #1E3A56);
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #2D3748);
+}
+
+.membership-plans-page.light .facilities-selection {
+  background: #f8f9fa;
+  border-color: #e0e0e0;
+}
+
+.facility-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: var(--bg-secondary, #152F4A);
+  border-radius: 6px;
+  border: 1px solid var(--border-color, #2D3748);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.membership-plans-page.light .facility-checkbox {
+  background: #ffffff;
+  border-color: #e0e0e0;
+}
+
+.facility-checkbox:hover {
+  background: var(--bg-tertiary, #1E3A56);
+  border-color: var(--accent-primary, #60a5fa);
+}
+
+.membership-plans-page.light .facility-checkbox:hover {
+  background: #f0f0f0;
+  border-color: #1A73E8;
+}
+
+.facility-checkbox input[type="checkbox"] {
+  margin: 0;
+  accent-color: var(--accent-primary, #60a5fa);
+}
+
+.facility-name {
+  font-weight: 500;
+  color: var(--text-primary, #E6E9EF);
+  flex: 1;
+}
+
+.facility-type {
+  font-size: 0.75rem;
+  color: var(--text-muted, #A1AEC4);
+  font-style: italic;
+}
+
+.no-facilities {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--text-muted, #A1AEC4);
+  font-style: italic;
+  margin: 0;
+}
+
+.no-facilities a {
+  color: var(--accent-primary, #60a5fa);
+  text-decoration: none;
+}
+
+.no-facilities a:hover {
+  text-decoration: underline;
+}
+
+.facilities-textarea {
+  margin-top: 1rem;
+}
+
+.facilities-textarea label {
+  font-size: 0.875rem;
+  color: var(--text-secondary, #A1AEC4);
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
 .features-list {
   display: flex;
   flex-direction: column;
@@ -490,7 +606,69 @@
   box-shadow: 0 8px 25px rgba(26, 115, 232, 0.3);
 }
 
+/* Loading and Error States */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--border-color, #2D3748);
+  border-top: 4px solid var(--accent-primary, #60a5fa);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+}
+
+.error-state p {
+  color: #ef4444;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.error-state button {
+  background: var(--button-primary-bg, #1A73E8);
+  color: var(--button-primary-text, #FFFFFF);
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.error-state button:hover {
+  background: var(--button-primary-hover, #1669D5);
+}
+
 /* Responsive Design */
+@media (max-width: 1200px) {
+  .plans-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
   .membership-plans-page {
     padding: 1rem;

@@ -382,6 +382,151 @@
   background: var(--button-primary-hover, #1669D5);
 }
 
+/* Create Form Styles */
+.create-form-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.create-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.create-btn {
+  background: var(--button-primary-bg, #1A73E8);
+  color: var(--button-primary-text, #FFFFFF);
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.create-btn:hover {
+  background: var(--button-primary-hover, #1669D5);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(26, 115, 232, 0.3);
+}
+
+.delete-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.delete-btn:hover {
+  background: #dc2626;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+}
+
+.card-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+/* Empty State Styles */
+.empty-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  text-align: center;
+}
+
+.empty-content {
+  max-width: 400px;
+  padding: 2rem;
+}
+
+.empty-content h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary, #E6E9EF);
+  margin: 0 0 1rem 0;
+}
+
+.empty-content p {
+  font-size: 1rem;
+  color: var(--text-secondary, #A1AEC4);
+  margin: 0 0 2rem 0;
+  line-height: 1.5;
+}
+
+.no-amenities {
+  text-align: center;
+  color: var(--text-muted, #A1AEC4);
+  font-style: italic;
+  padding: 2rem;
+}
+
+/* Loading and Error States */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--border-color, #2D3748);
+  border-top: 4px solid var(--accent-primary, #60a5fa);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+}
+
+.error-state p {
+  color: #ef4444;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.error-state button {
+  background: var(--button-primary-bg, #1A73E8);
+  color: var(--button-primary-text, #FFFFFF);
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.error-state button:hover {
+  background: var(--button-primary-hover, #1669D5);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .gym-information-page {

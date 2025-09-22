@@ -8,6 +8,7 @@ import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
 import Dashboard from './components/Dashboard';
 import AddFirstGym from './components/AddFirstGym';
+import FacilitiesPage from './components/FacilitiesPage';
 import './App.css';
 
 interface Owner {
@@ -38,6 +39,7 @@ function App() {
   const [gyms, setGyms] = useState<Gym[]>([]);
   const [gymNames, setGymNames] = useState<string[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
 
   // Check for existing authentication on component mount
   useEffect(() => {
@@ -50,8 +52,8 @@ function App() {
         const parsedOwner = JSON.parse(ownerData);
         const parsedGymNames = gymNamesData ? JSON.parse(gymNamesData) : [];
         
-        // Validate token by making a test API call
-        fetch('http://localhost:8080/api/owner/auth/test', {
+        // Validate token by making a test API call to an authenticated endpoint
+        fetch('http://localhost:8080/api/staff', {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -75,13 +77,16 @@ function App() {
             }));
             setGyms(gymObjects);
             setIsAuthenticated(true);
+            console.log('Token validation successful');
           } else {
             // Token is invalid, clear it
+            console.log('Token validation failed, clearing stored data');
             localStorage.removeItem('ownerToken');
             localStorage.removeItem('ownerData');
             localStorage.removeItem('gymNamesData');
             setIsAuthenticated(false);
           }
+          setIsInitializing(false);
         })
         .catch(() => {
           // Network error or invalid token
@@ -89,6 +94,7 @@ function App() {
           localStorage.removeItem('ownerData');
           localStorage.removeItem('gymNamesData');
           setIsAuthenticated(false);
+          setIsInitializing(false);
         });
       } catch (error) {
         // Clear invalid data
@@ -96,9 +102,11 @@ function App() {
         localStorage.removeItem('ownerData');
         localStorage.removeItem('gymNamesData');
         setIsAuthenticated(false);
+        setIsInitializing(false);
       }
     } else {
       setIsAuthenticated(false);
+      setIsInitializing(false);
     }
   }, []);
 
@@ -239,6 +247,7 @@ function App() {
           gyms={gyms}
           gymNames={gymNames}
           isLoading={isLoading}
+          isInitializing={isInitializing}
           error={error}
           onSignIn={handleSignIn}
           onSignUp={handleSignUp}
@@ -257,6 +266,7 @@ interface AppContentProps {
   gyms: Gym[];
   gymNames: string[];
   isLoading: boolean;
+  isInitializing: boolean;
   error: string | null;
   onSignIn: (email: string, password: string) => void;
   onSignUp: (name: string, email: string, password: string, businessName: string) => void;
@@ -271,6 +281,7 @@ const AppContent: React.FC<AppContentProps> = ({
   gyms,
   gymNames,
   isLoading,
+  isInitializing,
   error,
   onSignIn,
   onSignUp,
@@ -282,11 +293,16 @@ const AppContent: React.FC<AppContentProps> = ({
 
   // Handle redirect after authentication
   useEffect(() => {
+    // Don't redirect while initializing
+    if (isInitializing) {
+      return;
+    }
+    
     console.log('AppContent useEffect triggered:', { isAuthenticated, owner: !!owner, gymNamesCount: gymNames.length });
     
     if (isAuthenticated && owner) {
       const currentPath = window.location.pathname;
-      const dashboardRoutes = ['/dashboard', '/add-first-gym', '/members', '/fundamentals', '/membership-plans', '/gallery', '/inventory', '/trainers', '/staff', '/analytics', '/notifications', '/alerts', '/compare', '/attendance', '/preferences', '/all-gyms'];
+      const dashboardRoutes = ['/dashboard', '/add-first-gym', '/members', '/fundamentals', '/membership-plans', '/facilities', '/gallery', '/inventory', '/trainers', '/staff', '/analytics', '/notifications', '/alerts', '/compare', '/attendance', '/preferences', '/all-gyms'];
       const isOnDashboardRoute = dashboardRoutes.some(route => currentPath.startsWith(route)) || currentPath === '/';
       
       if (gymNames.length === 0) {
@@ -295,9 +311,12 @@ const AppContent: React.FC<AppContentProps> = ({
           navigate('/add-first-gym', { replace: true });
         }
       } else {
+        // Only redirect to dashboard if we're on an invalid route (not on any dashboard route)
         if (!isOnDashboardRoute) {
-          console.log('Redirecting to dashboard');
+          console.log('Redirecting to dashboard from invalid route:', currentPath);
           navigate('/', { replace: true });
+        } else {
+          console.log('Staying on current route:', currentPath);
         }
       }
     } else if (!isAuthenticated) {
@@ -309,7 +328,25 @@ const AppContent: React.FC<AppContentProps> = ({
         navigate('/signin', { replace: true });
       }
     }
-  }, [isAuthenticated, owner, gymNames.length, navigate]);
+  }, [isAuthenticated, owner, gymNames.length, navigate, isInitializing]);
+
+  // Show loading spinner while initializing
+  if (isInitializing) {
+    return (
+      <div className="App">
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          height: '100vh',
+          fontSize: '18px',
+          color: '#666'
+        }}>
+          Loading...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="App">

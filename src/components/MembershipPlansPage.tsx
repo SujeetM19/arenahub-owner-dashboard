@@ -1,138 +1,222 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
-import { Plus, Edit, Trash2, Check, Star, Users, Clock, Zap } from 'lucide-react';
+import { Plus, Edit, Trash2, Check, Star, Users, Clock, Zap, Calendar, DollarSign } from 'lucide-react';
+import GymInfoNavbar from './GymInfoNavbar';
+import api from '../services/api';
 import './MembershipPlansPage.css';
 
 interface MembershipPlan {
   id: number;
-  name: string;
-  price: number;
-  duration: string;
-  features: string[];
-  isPopular: boolean;
-  description: string;
+  planName: string;
+  planCurrentPrice: number;
+  planNormalPrice: number;
+  planMaxPrice: number;
+  durationMonths: number;
+  facilities: string;
+  isTrainerIncluded: boolean;
+  isDietPlanIncluded: boolean;
+  isLowestActive: boolean;
+  dateFrom: string;
+  dateUpto?: string;
+  description?: string;
   maxMembers?: number;
-  accessHours: string;
+  accessHours?: string;
+}
+
+interface Facility {
+  id: number;
+  facilityName: string;
+  facilityType: string;
+  description: string;
+  isAvailable: boolean;
 }
 
 const MembershipPlansPage: React.FC = () => {
   const { theme } = useTheme();
   
-  console.log('MembershipPlansPage rendered');
-  const [plans, setPlans] = useState<MembershipPlan[]>([
-    {
-      id: 1,
-      name: 'Basic',
-      price: 29.99,
-      duration: 'monthly',
-      features: ['Gym Access', 'Locker Room', 'Basic Equipment', 'Free WiFi'],
-      isPopular: false,
-      description: 'Perfect for beginners who want to start their fitness journey.',
-      maxMembers: 1,
-      accessHours: '5:00 AM - 10:00 PM'
-    },
-    {
-      id: 2,
-      name: 'Premium',
-      price: 49.99,
-      duration: 'monthly',
-      features: ['All Basic Features', 'Personal Training (2 sessions)', 'Group Classes', 'Nutrition Consultation', 'Sauna Access'],
-      isPopular: true,
-      description: 'Our most popular plan with premium features and personal attention.',
-      maxMembers: 2,
-      accessHours: '24/7 Access'
-    },
-    {
-      id: 3,
-      name: 'VIP',
-      price: 79.99,
-      duration: 'monthly',
-      features: ['All Premium Features', 'Unlimited Personal Training', 'Priority Booking', 'Guest Passes (2/month)', 'Towel Service', 'Spa Access'],
-      isPopular: false,
-      description: 'The ultimate fitness experience with exclusive benefits and luxury amenities.',
-      maxMembers: 4,
-      accessHours: '24/7 Access'
-    }
-  ]);
-
+  const [plans, setPlans] = useState<MembershipPlan[]>([]);
+  const [facilities, setFacilities] = useState<Facility[]>([]);
+  const [availableFacilities, setAvailableFacilities] = useState<Facility[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingPlan, setEditingPlan] = useState<MembershipPlan | null>(null);
   const [newPlan, setNewPlan] = useState<Omit<MembershipPlan, 'id'>>({
-    name: '',
-    price: 0,
-    duration: 'monthly',
-    features: [],
-    isPopular: false,
+    planName: '',
+    planCurrentPrice: 0,
+    planNormalPrice: 0,
+    planMaxPrice: 0,
+    durationMonths: 1,
+    facilities: '',
+    isTrainerIncluded: false,
+    isDietPlanIncluded: false,
+    isLowestActive: false,
+    dateFrom: new Date().toISOString().split('T')[0],
+    dateUpto: '',
     description: '',
     maxMembers: 1,
     accessHours: '5:00 AM - 10:00 PM'
   });
 
-  const handleAddPlan = () => {
-    const plan: MembershipPlan = {
-      ...newPlan,
-      id: Math.max(...plans.map(p => p.id)) + 1
-    };
-    setPlans([...plans, plan]);
-    setNewPlan({
-      name: '',
-      price: 0,
-      duration: 'monthly',
-      features: [],
-      isPopular: false,
-      description: '',
-      maxMembers: 1,
-      accessHours: '5:00 AM - 10:00 PM'
-    });
-    setShowAddModal(false);
+  // Fetch data on component mount
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [plansData, facilitiesData] = await Promise.all([
+        api.getMembershipPlans(),
+        api.getFacilities()
+      ]);
+      setPlans(plansData);
+      setFacilities(facilitiesData);
+      setAvailableFacilities(facilitiesData.filter(f => f.isAvailable));
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching data:', err);
+      setError('Failed to load data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddPlan = async () => {
+    try {
+      const planData = {
+        planName: newPlan.planName,
+        planMaxPrice: newPlan.planMaxPrice,
+        planNormalPrice: newPlan.planNormalPrice,
+        planCurrentPrice: newPlan.planCurrentPrice,
+        durationMonths: newPlan.durationMonths,
+        dateFrom: newPlan.dateFrom,
+        dateUpto: newPlan.dateUpto || null,
+        facilities: newPlan.facilities,
+        isTrainerIncluded: newPlan.isTrainerIncluded,
+        isDietPlanIncluded: newPlan.isDietPlanIncluded,
+        isLowestActive: newPlan.isLowestActive
+      };
+      
+      await api.createMembershipPlan(planData);
+      await fetchData(); // Refresh the list
+      setNewPlan({
+        planName: '',
+        planCurrentPrice: 0,
+        planNormalPrice: 0,
+        planMaxPrice: 0,
+        durationMonths: 1,
+        facilities: '',
+        isTrainerIncluded: false,
+        isDietPlanIncluded: false,
+        isLowestActive: false,
+        dateFrom: new Date().toISOString().split('T')[0],
+        dateUpto: '',
+        description: '',
+        maxMembers: 1,
+        accessHours: '5:00 AM - 10:00 PM'
+      });
+      setShowAddModal(false);
+    } catch (err) {
+      console.error('Error creating plan:', err);
+      setError('Failed to create plan');
+    }
   };
 
   const handleEditPlan = (plan: MembershipPlan) => {
     setEditingPlan(plan);
   };
 
-  const handleUpdatePlan = () => {
+  const handleUpdatePlan = async () => {
     if (editingPlan) {
-      setPlans(plans.map(p => p.id === editingPlan.id ? editingPlan : p));
-      setEditingPlan(null);
+      try {
+        const planData = {
+          planName: editingPlan.planName,
+          planMaxPrice: editingPlan.planMaxPrice,
+          planNormalPrice: editingPlan.planNormalPrice,
+          planCurrentPrice: editingPlan.planCurrentPrice,
+          durationMonths: editingPlan.durationMonths,
+          dateFrom: editingPlan.dateFrom,
+          dateUpto: editingPlan.dateUpto || null,
+          facilities: editingPlan.facilities,
+          isTrainerIncluded: editingPlan.isTrainerIncluded,
+          isDietPlanIncluded: editingPlan.isDietPlanIncluded,
+          isLowestActive: editingPlan.isLowestActive
+        };
+        
+        await api.updateMembershipPlan(editingPlan.id, planData);
+        await fetchData(); // Refresh the list
+        setEditingPlan(null);
+      } catch (err) {
+        console.error('Error updating plan:', err);
+        setError('Failed to update plan');
+      }
     }
   };
 
-  const handleDeletePlan = (id: number) => {
+  const handleDeletePlan = async (id: number) => {
     if (window.confirm('Are you sure you want to delete this membership plan?')) {
-      setPlans(plans.filter(p => p.id !== id));
+      try {
+        await api.deleteMembershipPlan(id);
+        await fetchData(); // Refresh the list
+      } catch (err) {
+        console.error('Error deleting plan:', err);
+        setError('Failed to delete plan');
+      }
     }
   };
 
-  const addFeature = (planId: number, feature: string) => {
-    if (feature.trim()) {
-      setPlans(plans.map(plan => 
-        plan.id === planId 
-          ? { ...plan, features: [...plan.features, feature.trim()] }
-          : plan
-      ));
-    }
+  const getDurationText = (months: number) => {
+    if (months === 1) return 'Monthly';
+    if (months === 12) return 'Yearly';
+    if (months < 12) return `${months} Months`;
+    return `${Math.floor(months / 12)} Year${Math.floor(months / 12) > 1 ? 's' : ''}`;
   };
 
-  const removeFeature = (planId: number, featureIndex: number) => {
-    setPlans(plans.map(plan => 
-      plan.id === planId 
-        ? { ...plan, features: plan.features.filter((_, index) => index !== featureIndex) }
-        : plan
-    ));
+  const getDurationIcon = (months: number) => {
+    if (months === 1) return <Clock size={16} />;
+    if (months === 12) return <Star size={16} />;
+    if (months > 12) return <Zap size={16} />;
+    return <Calendar size={16} />;
   };
 
-  const getDurationIcon = (duration: string) => {
-    switch (duration) {
-      case 'monthly': return <Clock size={16} />;
-      case 'yearly': return <Star size={16} />;
-      case 'lifetime': return <Zap size={16} />;
-      default: return <Clock size={16} />;
-    }
+  const isOfferActive = (plan: MembershipPlan) => {
+    if (!plan.dateUpto) return false;
+    const offerEndDate = new Date(plan.dateUpto);
+    const today = new Date();
+    return offerEndDate > today;
   };
+
+  const getFacilityList = (facilitiesString: string) => {
+    if (!facilitiesString) return [];
+    return facilitiesString.split(',').map(f => f.trim()).filter(f => f.length > 0);
+  };
+
+  if (loading) {
+    return (
+      <div className={`membership-plans-page ${theme}`}>
+        <div className="loading-state">
+          <div className="spinner"></div>
+          <p>Loading membership plans...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={`membership-plans-page ${theme}`}>
+        <div className="error-state">
+          <p>{error}</p>
+          <button onClick={fetchData}>Try Again</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`membership-plans-page ${theme}`}>
+      <GymInfoNavbar />
       <div className="plans-header">
         <div className="header-content">
           <h1 className="page-title">Membership Plans</h1>
@@ -148,68 +232,109 @@ const MembershipPlansPage: React.FC = () => {
       </div>
 
       <div className="plans-grid">
-        {plans.map((plan) => (
-          <div key={plan.id} className={`plan-card ${plan.isPopular ? 'popular' : ''}`}>
-            {plan.isPopular && (
-              <div className="popular-badge">
-                <Star size={16} />
-                Most Popular
+        {plans.map((plan) => {
+          const offerActive = isOfferActive(plan);
+          const facilityList = getFacilityList(plan.facilities);
+          
+          return (
+            <div key={plan.id} className={`plan-card ${plan.isLowestActive ? 'popular' : ''}`}>
+              {plan.isLowestActive && (
+                <div className="popular-badge">
+                  <Star size={16} />
+                  Most Popular
+                </div>
+              )}
+              
+              <div className="plan-header">
+                <h3 className="plan-name">{plan.planName}</h3>
+                <div className="plan-price">
+                  {offerActive ? (
+                    <div className="offer-price">
+                      <span className="current-price">${plan.planCurrentPrice}</span>
+                      <span className="original-price">${plan.planMaxPrice}</span>
+                      <span className="price-duration">/{getDurationText(plan.durationMonths)}</span>
+                    </div>
+                  ) : (
+                    <div className="normal-price">
+                      <span className="price-amount">${plan.planCurrentPrice}</span>
+                      <span className="price-duration">/{getDurationText(plan.durationMonths)}</span>
+                    </div>
+                  )}
+                </div>
               </div>
-            )}
-            
-            <div className="plan-header">
-              <h3 className="plan-name">{plan.name}</h3>
-              <div className="plan-price">
-                <span className="price-amount">${plan.price}</span>
-                <span className="price-duration">/{plan.duration}</span>
+
+              {plan.description && (
+                <div className="plan-description">
+                  <p>{plan.description}</p>
+                </div>
+              )}
+
+              <div className="plan-details">
+                <div className="detail-item">
+                  <Users size={16} />
+                  <span>Max {plan.maxMembers || 1} member{(plan.maxMembers || 1) !== 1 ? 's' : ''}</span>
+                </div>
+                <div className="detail-item">
+                  {getDurationIcon(plan.durationMonths)}
+                  <span>{getDurationText(plan.durationMonths)}</span>
+                </div>
+                {plan.accessHours && (
+                  <div className="detail-item">
+                    <Clock size={16} />
+                    <span>{plan.accessHours}</span>
+                  </div>
+                )}
+                {offerActive && plan.dateUpto && (
+                  <div className="detail-item">
+                    <Calendar size={16} />
+                    <span>Offer until {new Date(plan.dateUpto).toLocaleDateString()}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="plan-features">
+                <h4>Features</h4>
+                <ul>
+                  {facilityList.map((facility, index) => (
+                    <li key={index}>
+                      <Check size={16} />
+                      <span>{facility}</span>
+                    </li>
+                  ))}
+                  {plan.isTrainerIncluded && (
+                    <li>
+                      <Check size={16} />
+                      <span>Personal Training Included</span>
+                    </li>
+                  )}
+                  {plan.isDietPlanIncluded && (
+                    <li>
+                      <Check size={16} />
+                      <span>Diet Plan Included</span>
+                    </li>
+                  )}
+                </ul>
+              </div>
+
+              <div className="plan-actions">
+                <button 
+                  className="edit-plan-btn"
+                  onClick={() => handleEditPlan(plan)}
+                >
+                  <Edit size={16} />
+                  Edit
+                </button>
+                <button 
+                  className="delete-plan-btn"
+                  onClick={() => handleDeletePlan(plan.id)}
+                >
+                  <Trash2 size={16} />
+                  Delete
+                </button>
               </div>
             </div>
-
-            <div className="plan-description">
-              <p>{plan.description}</p>
-            </div>
-
-            <div className="plan-details">
-              <div className="detail-item">
-                <Users size={16} />
-                <span>Max {plan.maxMembers} member{plan.maxMembers !== 1 ? 's' : ''}</span>
-              </div>
-              <div className="detail-item">
-                <Clock size={16} />
-                <span>{plan.accessHours}</span>
-              </div>
-            </div>
-
-            <div className="plan-features">
-              <h4>Features</h4>
-              <ul>
-                {plan.features.map((feature, index) => (
-                  <li key={index}>
-                    <Check size={16} />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="plan-actions">
-              <button 
-                className="edit-plan-btn"
-                onClick={() => handleEditPlan(plan)}
-              >
-                <Edit size={16} />
-                Edit
-              </button>
-              <button 
-                className="delete-plan-btn"
-                onClick={() => handleDeletePlan(plan.id)}
-              >
-                <Trash2 size={16} />
-                Delete
-              </button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Add Plan Modal */}
@@ -230,39 +355,118 @@ const MembershipPlansPage: React.FC = () => {
                 <label>Plan Name</label>
                 <input
                   type="text"
-                  value={newPlan.name}
-                  onChange={(e) => setNewPlan({...newPlan, name: e.target.value})}
+                  value={newPlan.planName}
+                  onChange={(e) => setNewPlan({...newPlan, planName: e.target.value})}
                   placeholder="e.g., Basic, Premium, VIP"
                 />
               </div>
               
               <div className="form-row">
                 <div className="form-group">
-                  <label>Price</label>
+                  <label>Maximum Price (Crossed out)</label>
                   <input
                     type="number"
                     step="0.01"
-                    value={newPlan.price}
-                    onChange={(e) => setNewPlan({...newPlan, price: parseFloat(e.target.value)})}
+                    value={newPlan.planMaxPrice}
+                    onChange={(e) => setNewPlan({...newPlan, planMaxPrice: parseFloat(e.target.value) || 0})}
+                    placeholder="e.g., 99.99"
                   />
                 </div>
                 <div className="form-group">
-                  <label>Duration</label>
-                  <select
-                    value={newPlan.duration}
-                    onChange={(e) => setNewPlan({...newPlan, duration: e.target.value})}
-                  >
-                    <option value="monthly">Monthly</option>
-                    <option value="yearly">Yearly</option>
-                    <option value="lifetime">Lifetime</option>
-                  </select>
+                  <label>Standard Price</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={newPlan.planNormalPrice}
+                    onChange={(e) => setNewPlan({...newPlan, planNormalPrice: parseFloat(e.target.value) || 0})}
+                    placeholder="e.g., 79.99"
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Current Price (Offer Price)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={newPlan.planCurrentPrice}
+                    onChange={(e) => setNewPlan({...newPlan, planCurrentPrice: parseFloat(e.target.value) || 0})}
+                    placeholder="e.g., 59.99"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Duration (Months)</label>
+                  <input
+                    type="number"
+                    value={newPlan.durationMonths}
+                    onChange={(e) => setNewPlan({...newPlan, durationMonths: parseInt(e.target.value) || 1})}
+                    min="1"
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Start Date</label>
+                  <input
+                    type="date"
+                    value={newPlan.dateFrom}
+                    onChange={(e) => setNewPlan({...newPlan, dateFrom: e.target.value})}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Offer End Date (Optional)</label>
+                  <input
+                    type="date"
+                    value={newPlan.dateUpto || ''}
+                    onChange={(e) => setNewPlan({...newPlan, dateUpto: e.target.value})}
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>Select Facilities</label>
+                <div className="facilities-selection">
+                  {availableFacilities.map(facility => (
+                    <label key={facility.id} className="facility-checkbox">
+                      <input
+                        type="checkbox"
+                        checked={getFacilityList(newPlan.facilities).includes(facility.facilityName)}
+                        onChange={(e) => {
+                          const currentFacilities = getFacilityList(newPlan.facilities);
+                          let newFacilities;
+                          if (e.target.checked) {
+                            newFacilities = [...currentFacilities, facility.facilityName];
+                          } else {
+                            newFacilities = currentFacilities.filter(f => f !== facility.facilityName);
+                          }
+                          setNewPlan({...newPlan, facilities: newFacilities.join(', ')});
+                        }}
+                      />
+                      <span className="facility-name">{facility.facilityName}</span>
+                      <span className="facility-type">({facility.facilityType})</span>
+                    </label>
+                  ))}
+                  {availableFacilities.length === 0 && (
+                    <p className="no-facilities">No facilities available. <a href="/facilities">Add facilities first</a></p>
+                  )}
+                </div>
+                <div className="facilities-textarea">
+                  <label>Or enter custom facilities (comma-separated):</label>
+                  <textarea
+                    value={newPlan.facilities}
+                    onChange={(e) => setNewPlan({...newPlan, facilities: e.target.value})}
+                    rows={2}
+                    placeholder="e.g., Gym Access, Locker Room, Free WiFi, Sauna"
+                  />
                 </div>
               </div>
 
               <div className="form-group">
                 <label>Description</label>
                 <textarea
-                  value={newPlan.description}
+                  value={newPlan.description || ''}
                   onChange={(e) => setNewPlan({...newPlan, description: e.target.value})}
                   rows={3}
                   placeholder="Describe this membership plan..."
@@ -274,15 +478,16 @@ const MembershipPlansPage: React.FC = () => {
                   <label>Max Members</label>
                   <input
                     type="number"
-                    value={newPlan.maxMembers}
-                    onChange={(e) => setNewPlan({...newPlan, maxMembers: parseInt(e.target.value)})}
+                    value={newPlan.maxMembers || 1}
+                    onChange={(e) => setNewPlan({...newPlan, maxMembers: parseInt(e.target.value) || 1})}
+                    min="1"
                   />
                 </div>
                 <div className="form-group">
                   <label>Access Hours</label>
                   <input
                     type="text"
-                    value={newPlan.accessHours}
+                    value={newPlan.accessHours || ''}
                     onChange={(e) => setNewPlan({...newPlan, accessHours: e.target.value})}
                     placeholder="e.g., 5:00 AM - 10:00 PM"
                   />
@@ -293,8 +498,30 @@ const MembershipPlansPage: React.FC = () => {
                 <label>
                   <input
                     type="checkbox"
-                    checked={newPlan.isPopular}
-                    onChange={(e) => setNewPlan({...newPlan, isPopular: e.target.checked})}
+                    checked={newPlan.isTrainerIncluded}
+                    onChange={(e) => setNewPlan({...newPlan, isTrainerIncluded: e.target.checked})}
+                  />
+                  Include Personal Training
+                </label>
+              </div>
+
+              <div className="form-group">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={newPlan.isDietPlanIncluded}
+                    onChange={(e) => setNewPlan({...newPlan, isDietPlanIncluded: e.target.checked})}
+                  />
+                  Include Diet Plan
+                </label>
+              </div>
+
+              <div className="form-group">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={newPlan.isLowestActive}
+                    onChange={(e) => setNewPlan({...newPlan, isLowestActive: e.target.checked})}
                   />
                   Mark as Popular Plan
                 </label>
@@ -336,38 +563,114 @@ const MembershipPlansPage: React.FC = () => {
                 <label>Plan Name</label>
                 <input
                   type="text"
-                  value={editingPlan.name}
-                  onChange={(e) => setEditingPlan({...editingPlan, name: e.target.value})}
+                  value={editingPlan.planName}
+                  onChange={(e) => setEditingPlan({...editingPlan, planName: e.target.value})}
                 />
               </div>
               
               <div className="form-row">
                 <div className="form-group">
-                  <label>Price</label>
+                  <label>Maximum Price (Crossed out)</label>
                   <input
                     type="number"
                     step="0.01"
-                    value={editingPlan.price}
-                    onChange={(e) => setEditingPlan({...editingPlan, price: parseFloat(e.target.value)})}
+                    value={editingPlan.planMaxPrice}
+                    onChange={(e) => setEditingPlan({...editingPlan, planMaxPrice: parseFloat(e.target.value) || 0})}
                   />
                 </div>
                 <div className="form-group">
-                  <label>Duration</label>
-                  <select
-                    value={editingPlan.duration}
-                    onChange={(e) => setEditingPlan({...editingPlan, duration: e.target.value})}
-                  >
-                    <option value="monthly">Monthly</option>
-                    <option value="yearly">Yearly</option>
-                    <option value="lifetime">Lifetime</option>
-                  </select>
+                  <label>Standard Price</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={editingPlan.planNormalPrice}
+                    onChange={(e) => setEditingPlan({...editingPlan, planNormalPrice: parseFloat(e.target.value) || 0})}
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Current Price (Offer Price)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={editingPlan.planCurrentPrice}
+                    onChange={(e) => setEditingPlan({...editingPlan, planCurrentPrice: parseFloat(e.target.value) || 0})}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Duration (Months)</label>
+                  <input
+                    type="number"
+                    value={editingPlan.durationMonths}
+                    onChange={(e) => setEditingPlan({...editingPlan, durationMonths: parseInt(e.target.value) || 1})}
+                    min="1"
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Start Date</label>
+                  <input
+                    type="date"
+                    value={editingPlan.dateFrom}
+                    onChange={(e) => setEditingPlan({...editingPlan, dateFrom: e.target.value})}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Offer End Date (Optional)</label>
+                  <input
+                    type="date"
+                    value={editingPlan.dateUpto || ''}
+                    onChange={(e) => setEditingPlan({...editingPlan, dateUpto: e.target.value})}
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>Select Facilities</label>
+                <div className="facilities-selection">
+                  {availableFacilities.map(facility => (
+                    <label key={facility.id} className="facility-checkbox">
+                      <input
+                        type="checkbox"
+                        checked={getFacilityList(editingPlan.facilities).includes(facility.facilityName)}
+                        onChange={(e) => {
+                          const currentFacilities = getFacilityList(editingPlan.facilities);
+                          let newFacilities;
+                          if (e.target.checked) {
+                            newFacilities = [...currentFacilities, facility.facilityName];
+                          } else {
+                            newFacilities = currentFacilities.filter(f => f !== facility.facilityName);
+                          }
+                          setEditingPlan({...editingPlan, facilities: newFacilities.join(', ')});
+                        }}
+                      />
+                      <span className="facility-name">{facility.facilityName}</span>
+                      <span className="facility-type">({facility.facilityType})</span>
+                    </label>
+                  ))}
+                  {availableFacilities.length === 0 && (
+                    <p className="no-facilities">No facilities available. <a href="/facilities">Add facilities first</a></p>
+                  )}
+                </div>
+                <div className="facilities-textarea">
+                  <label>Or enter custom facilities (comma-separated):</label>
+                  <textarea
+                    value={editingPlan.facilities}
+                    onChange={(e) => setEditingPlan({...editingPlan, facilities: e.target.value})}
+                    rows={2}
+                    placeholder="e.g., Gym Access, Locker Room, Free WiFi, Sauna"
+                  />
                 </div>
               </div>
 
               <div className="form-group">
                 <label>Description</label>
                 <textarea
-                  value={editingPlan.description}
+                  value={editingPlan.description || ''}
                   onChange={(e) => setEditingPlan({...editingPlan, description: e.target.value})}
                   rows={3}
                 />
@@ -378,15 +681,16 @@ const MembershipPlansPage: React.FC = () => {
                   <label>Max Members</label>
                   <input
                     type="number"
-                    value={editingPlan.maxMembers}
-                    onChange={(e) => setEditingPlan({...editingPlan, maxMembers: parseInt(e.target.value)})}
+                    value={editingPlan.maxMembers || 1}
+                    onChange={(e) => setEditingPlan({...editingPlan, maxMembers: parseInt(e.target.value) || 1})}
+                    min="1"
                   />
                 </div>
                 <div className="form-group">
                   <label>Access Hours</label>
                   <input
                     type="text"
-                    value={editingPlan.accessHours}
+                    value={editingPlan.accessHours || ''}
                     onChange={(e) => setEditingPlan({...editingPlan, accessHours: e.target.value})}
                   />
                 </div>
@@ -396,40 +700,33 @@ const MembershipPlansPage: React.FC = () => {
                 <label>
                   <input
                     type="checkbox"
-                    checked={editingPlan.isPopular}
-                    onChange={(e) => setEditingPlan({...editingPlan, isPopular: e.target.checked})}
+                    checked={editingPlan.isTrainerIncluded}
+                    onChange={(e) => setEditingPlan({...editingPlan, isTrainerIncluded: e.target.checked})}
                   />
-                  Mark as Popular Plan
+                  Include Personal Training
                 </label>
               </div>
 
               <div className="form-group">
-                <label>Features</label>
-                <div className="features-list">
-                  {editingPlan.features.map((feature, index) => (
-                    <div key={index} className="feature-item">
-                      <span>{feature}</span>
-                      <button 
-                        className="remove-feature-btn"
-                        onClick={() => removeFeature(editingPlan.id, index)}
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  ))}
-                  <div className="add-feature">
-                    <input
-                      type="text"
-                      placeholder="Add new feature"
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                          addFeature(editingPlan.id, e.currentTarget.value);
-                          e.currentTarget.value = '';
-                        }
-                      }}
-                    />
-                  </div>
-                </div>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={editingPlan.isDietPlanIncluded}
+                    onChange={(e) => setEditingPlan({...editingPlan, isDietPlanIncluded: e.target.checked})}
+                  />
+                  Include Diet Plan
+                </label>
+              </div>
+
+              <div className="form-group">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={editingPlan.isLowestActive}
+                    onChange={(e) => setEditingPlan({...editingPlan, isLowestActive: e.target.checked})}
+                  />
+                  Mark as Popular Plan
+                </label>
               </div>
             </div>
             <div className="modal-actions">
